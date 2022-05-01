@@ -1,3 +1,5 @@
+For those interested in a Perl 5 Language Server, check out https://github.com/bscan/PerlNavigator 
+
 # Raku Navigator
 
 This is the source code for the Visual Studio Code Raku Extension with Language Server. Currently it provides
@@ -5,6 +7,8 @@ This is the source code for the Visual Studio Code Raku Extension with Language 
 - Icon for Raku files
 - Syntax Highlighting (thanks to https://github.com/Raku/atom-language-perl6)
 - Simple Language Server providing syntax checking
+
+Install the vscode extension from: https://marketplace.visualstudio.com/items?itemName=bscan.raku-navigator 
 
 ## Screenshot
 
