@@ -1,0 +1,116 @@
+{
+  "name": "raku-navigator",
+  "displayName": "Raku",
+  "description": "Language support for Raku including syntax highlighting and error checking.",
+  "version": "0.0.2",
+  "author": "bscan",
+	"license": "MIT",
+	"icon": "images/Camelia.png",
+  "publisher": "vscode-samples",
+  "engines": {
+    "vscode": "^1.28.0"
+  },
+  "repository": {
+		"type": "git",
+		"url": "https://github.com/bscan/RakuNavigator"
+	},
+  "activationEvents": [
+		"onLanguage:raku"
+	],
+  "main": "./client/out/extension",
+
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "raku",
+        "aliases": [
+          "Raku",
+          "raku"
+        ],
+        "extensions": [
+          ".raku",
+          ".rakumod",
+          ".rakutest",
+          ".p6",
+          ".pm6"
+        ],
+        "icon": {
+          "light": "./images/Raku128.png",
+          "dark": "./images/Raku128.png"
+        },
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "raku",
+        "scopeName": "source.raku",
+        "path": "./syntaxes/raku.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+			"type": "object",
+			"title": "Raku",
+			"properties": {
+				"raku.rakuPath": {
+					"scope": "resource",
+					"type": "string",
+					"default": "raku",
+					"description": "Full path to the raku executable (no aliases, .bat files or ~/)"
+				},
+				"raku.includePaths": {
+					"scope": "resource",
+					"type": "array",
+					"default": [],
+					"description": "Array of paths added to @INC. You can use $workspaceRoot as a placeholder."
+				},
+        "raku.logging": {
+					"scope": "resource",
+					"type": "boolean",
+					"default": true,
+					"description": "Log to stdout from the navigator. Viewable in the Raku Navigator LSP log"
+				},
+				"raku.trace.server": {
+					"scope": "window",
+					"type": "string",
+					"enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"default": "messages",
+					"description": "Traces the communication between VS Code and the language server."
+				}
+			}
+		}
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -b",
+    "watch": "tsc -b -w",
+    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+    "test": "sh ./scripts/e2e.sh",
+    "build-binary": "tsc -b && pkg ."
+  },
+  "devDependencies": {
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^12.12.0",
+    "@typescript-eslint/eslint-plugin": "^4.23.0",
+    "@typescript-eslint/parser": "^4.23.0",
+    "eslint": "^7.26.0",
+    "mocha": "^8.3.2",
+    "pkg": "^5.5.2",
+    "typescript": "^4.2.3"
+  },
+  "bin": "server/out/server.js"
+}
+
+
+
+
+
+		
+
