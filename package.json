@@ -6,7 +6,7 @@
   "author": "bscan",
 	"license": "MIT",
 	"icon": "images/Camelia.png",
-  "publisher": "vscode-samples",
+  "publisher": "bscan",
   "engines": {
     "vscode": "^1.28.0"
   },
