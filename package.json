@@ -2,7 +2,7 @@
   "name": "raku-navigator",
   "displayName": "Raku",
   "description": "Language support for Raku including syntax highlighting and error checking.",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "author": "bscan",
 	"license": "MIT",
 	"icon": "images/Camelia.png",
@@ -15,7 +15,8 @@
 		"url": "https://github.com/bscan/RakuNavigator"
 	},
   "activationEvents": [
-		"onLanguage:raku"
+		"onLanguage:raku",
+    "onLanguage:perl6"
 	],
   "main": "./client/out/extension",
 
@@ -33,9 +34,11 @@
         "extensions": [
           ".raku",
           ".rakumod",
+          ".rakudoc",
           ".rakutest",
           ".p6",
-          ".pm6"
+          ".pm6",
+          ".t6"
         ],
         "icon": {
           "light": "./images/Raku128.png",
@@ -49,6 +52,16 @@
         "language": "raku",
         "scopeName": "source.raku",
         "path": "./syntaxes/raku.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "raku",
+        "path": "./snippets/rakuSnippets.json"
+      },
+      {
+        "language": "perl6",
+        "path": "./snippets/rakuSnippets.json"
       }
     ],
     "configuration": {

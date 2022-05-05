@@ -38,7 +38,10 @@ export function activate(context: ExtensionContext) {
 	// Options to control the language client
 	const clientOptions: LanguageClientOptions = {
 		// Register the server for raku documents
-		documentSelector: [{ scheme: 'file', language: 'raku' }],
+		documentSelector: [
+			{ scheme: 'file', language: 'raku' },
+			{ scheme: 'file', language: 'perl6' }
+		],
 		synchronize: {
 			configurationSection: 'raku',
 			// Notify the server about file changes to '.clientrc files contained in the workspace
