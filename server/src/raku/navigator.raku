@@ -26,10 +26,10 @@ sub parse-code( Str $source ) {
         $compiler,'parseactions'
     )($compiler);
 
-    # Safer way to parse
     my $munged-source = $source;
-    $munged-source ~~ s:g{ 'BEGIN' } = 'ENTER';
-    $munged-source ~~ s:g{ 'CHECK' } = 'ENTER';
+    # TODO: Work on safer parsing method
+    # $munged-source ~~ s:g{ 'BEGIN' } = 'ENTER';
+    # $munged-source ~~ s:g{ 'CHECK' } = 'ENTER';
 
     my $parsed = $g.parse(
         $munged-source,

@@ -2,7 +2,7 @@
   "name": "raku-navigator",
   "displayName": "Raku",
   "description": "Language support for Raku including syntax highlighting and error checking.",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "author": "bscan",
 	"license": "MIT",
 	"icon": "images/Camelia.png",
