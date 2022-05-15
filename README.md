@@ -17,7 +17,7 @@ Install the vscode extension from: https://marketplace.visualstudio.com/items?it
 
 ## Screenshot
 
-![Screenshot](https://raw.githubusercontent.com/bscan/RakuNavigator/master/images/RakuLang.png)
+![Gif of Raku LSP](https://raw.githubusercontent.com/bscan/RakuNavigator/master/images/RakuLSP.gif)
 
 
 ## Other recommended settings
