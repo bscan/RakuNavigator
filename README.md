@@ -15,7 +15,7 @@ This is a Raku Extension for Visual Studio Code including a Language Server. Cur
 
 Install the vscode extension from: https://marketplace.visualstudio.com/items?itemName=bscan.raku-navigator 
 
-## Screenshot
+## Gif of Extension in Action
 
 ![Gif of Raku LSP](https://raw.githubusercontent.com/bscan/RakuNavigator/master/images/RakuLSP.gif)
 
