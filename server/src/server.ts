@@ -8,8 +8,12 @@ import {
     InitializeParams,
     DidChangeConfigurationNotification,
     TextDocumentSyncKind,
+    Location,
     InitializeResult,
     WorkspaceFolder,
+    CompletionItem,
+    CompletionList,
+	TextDocumentPositionParams,
 } from 'vscode-languageserver/node';
 
 import {
@@ -20,9 +24,15 @@ import {
 } from 'vscode-languageserver-protocol';
 
 import Uri from 'vscode-uri';
-import { NavigatorSettings } from "./types";
+import { getDefinition } from "./navigation";
+import { NavigatorSettings, RakuDocument } from "./types";
 import { rakucompile } from "./diagnostics";
 import { nLog } from './utils';
+import { getSymbols } from "./symbols";
+import { getHover } from "./hover";
+import { getCompletions } from './completion';
+
+var LRU = require("lru-cache");
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -30,6 +40,9 @@ const connection = createConnection(ProposedFeatures.all);
 
 // Create a simple text document manager.
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
+
+const navSymbols = new LRU({max: 350000, length: function (value:RakuDocument , key:string) { return value.elems.size }});
+
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
@@ -49,6 +62,13 @@ connection.onInitialize((params: InitializeParams) => {
     const result: InitializeResult = {
         capabilities: {
             textDocumentSync: TextDocumentSyncKind.Incremental,
+            completionProvider: {
+                resolveProvider: false,
+                triggerCharacters: ['$','@','%','-', '>',':','.']
+            },
+            documentSymbolProvider: true, // Outline view and breadcrumbs
+            definitionProvider: true, // goto definition
+            hoverProvider: true, 
         }
     };
     if (hasWorkspaceFolderCapability) {
@@ -129,6 +149,7 @@ async function getDocumentSettings(resource: string): Promise<NavigatorSettings>
 // Only keep settings for open documents
 documents.onDidClose(e => {
     documentSettings.delete(e.document.uri);
+    navSymbols.del(e.document.uri);
     documentDiags.delete(e.document.uri);
     connection.sendDiagnostics({ uri: e.document.uri, diagnostics: [] });
 });
@@ -168,6 +189,10 @@ async function validateRakuDocument(textDocument: TextDocument): Promise<void> {
     if(!rakuOut) return;
     sendDiags({ uri: textDocument.uri, diagnostics: rakuOut.diags });
 
+    if(!rakuOut.error){
+        navSymbols.set(textDocument.uri, rakuOut.rakuDoc);
+    }
+
     return;
 }
 
@@ -192,6 +217,44 @@ connection.onDidChangeConfiguration(change => {
     // documents.all().forEach(validateRakuDocument);
 });
 
+// This handler provides the initial list of the completion items.
+connection.onCompletion((params: TextDocumentPositionParams): CompletionList | undefined => {
+    let document = documents.get(params.textDocument.uri);
+    let rakuDoc = navSymbols.get(params.textDocument.uri);
+
+    if(!document) return;
+    if(!rakuDoc) return; // navSymbols is an LRU cache, so the navigation elements will be missing if you open lots of files
+
+    const completions: CompletionItem[] = getCompletions(params, rakuDoc, document);
+    return {
+        items: completions,
+        isIncomplete: false,
+    };
+});
+
+
+connection.onHover(params => {
+    let document = documents.get(params.textDocument.uri);
+    let rakuDoc = navSymbols.get(params.textDocument.uri);
+    
+    if(!document || !rakuDoc) return;
+
+    return getHover(params, rakuDoc, document);
+});
+
+connection.onDefinition(params => {
+    let document = documents.get(params.textDocument.uri);
+    let rakuDoc = navSymbols.get(params.textDocument.uri);
+    if(!document) return;
+    if(!rakuDoc) return; // navSymbols is an LRU cache, so the navigation elements will be missing if you open lots of files
+    let locOut: Location | Location[] | undefined = getDefinition(params, rakuDoc, document);
+    return locOut;
+});
+
+
+connection.onDocumentSymbol(params => {
+    return getSymbols(navSymbols, params.textDocument.uri);
+});
 
 process.on('unhandledRejection', function(reason, p){
     console.log("Caught an unhandled Rejection at: Promise ", p, " reason: ", reason);

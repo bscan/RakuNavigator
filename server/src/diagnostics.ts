@@ -9,6 +9,7 @@ import {
 import { dirname, join } from 'path';
 import Uri from 'vscode-uri';
 import { getIncPaths, async_execFile, nLog } from './utils';
+import { buildNav } from "./parseDocument";
 
 import {
     TextDocument
@@ -22,15 +23,17 @@ export async function rakucompile(textDocument: TextDocument, workspaceFolders: 
     const filePath = Uri.parse(textDocument.uri).fsPath;
 
     rakuParams = rakuParams.concat(getIncPaths(workspaceFolders, settings));
-    nLog("Starting raku compilation check with " + settings.rakuPath + " " + rakuParams.join(" ") + " " + filePath, settings);
+    rakuParams = rakuParams.concat(filePath);
+    
+    nLog(`Starting raku compilation check with the equivalent of "cat ${filePath} | ` + settings.rakuPath + " " + rakuParams.join(" ") + "\"", settings);
 
-    let output: string;
+    let stderr: string;
     let stdout: string;
     const diagnostics: Diagnostic[] = [];
     const code = textDocument.getText();
     let myenv = process.env;
 	myenv.RAKUDO_ERROR_COLOR = '0';
-
+    let bErrors = false;
     try {
         const process = async_execFile(settings.rakuPath, rakuParams, {timeout: 10000, maxBuffer: 20 * 1024 * 1024});
         process?.child?.stdin?.on('error', (error: any) => { 
@@ -41,13 +44,14 @@ export async function rakucompile(textDocument: TextDocument, workspaceFolders: 
         process?.child?.stdin?.end();
         const out = await process;
 
-        output = out.stderr;
+        stderr = out.stderr;
         stdout = out.stdout;
     } catch(error: any) {
         // TODO: Check if we overflowed the buffer.
         if("stderr" in error && "stdout" in error){
-            output = error.stderr;
+            stderr = error.stderr;
             stdout = error.stdout;
+            bErrors = true; // Indicates compilation errors
         } else {
             nLog("rakucompile failed with unknown error", settings);
             nLog(error, settings);
@@ -56,17 +60,20 @@ export async function rakucompile(textDocument: TextDocument, workspaceFolders: 
     }
 
     // nLog("Raku compilation results", settings);
-    // nLog(output, settings);
+    // nLog(stderr, settings);
     // nLog("Raku stdout results", settings);
     // nLog(stdout, settings);
 
-    if(stdout){
+    if(stdout && bErrors){
         parseFromRaku(stdout, diagnostics); // Errors are dropped into stdout
     }
-    if(output){
-        parseUnhandled(output, diagnostics);
+    if(stderr){
+        parseUnhandled(stderr, diagnostics);
     }
-    return {diags: diagnostics};
+
+    const rakuDoc = await buildNav(stdout); 
+
+    return {diags: diagnostics, rakuDoc: rakuDoc, error: bErrors};
 }
 
 
@@ -111,6 +118,8 @@ function parseUnhandled(violations: string, diagnostics: Diagnostic[]): void {
 
     let match: RegExpExecArray | null;
     let lineNum: number;
+    // Currently we compile twice and get double warnings. This hack cuts it down.
+    violations = violations.split("90d0cb6c-4a53-427b-8d30-b1195895c2df").slice(-1)[0];
     var re =  /^\s+(.+?)\n\s+at.+\:(\d+)$/gm;
     while(match = re.exec(violations)){
         lineNum = +match[2] - 1;
