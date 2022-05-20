@@ -7,7 +7,7 @@ In general, I welcome issues and pull requests. I may not get to all the issues 
 
 ## Beginner issues
 
-I will be adding issues to the issue tracker and tagging good beginner issues.
+Check out the issue tracker. Issues tagged "Good First Issue" should be relatively straightfoward. The issues tagged "Help Wanted" are typically slightly trickier and require more specialized knowledge of either Raku or Typescript and would be a huge help. Feel free to reach out if any ticket interests you.
 
 ## Syntax Highlighting
 The syntax highlighting has some bugs in it, and these should ideally be centralized at the atom repo itself. https://github.com/Raku/atom-language-perl6
