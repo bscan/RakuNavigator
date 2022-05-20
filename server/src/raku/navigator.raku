@@ -30,8 +30,8 @@ sub parse-code( Str $source ) {
     my $munged-source = $source;
     # Replace BEGIN/CHECK blocks, but only if they start the line or follow a semicolon
     # This will mess with the phaser list in the outline. 
-    $munged-source ~~ s:Perl5:g:m/(?<=^|;|})([ \t]*)BEGIN(?=\s)/{$0}ENTER/;
-    $munged-source ~~ s:Perl5:g:m/(?<=^|;|})([ \t]*)CHECK(?=\s)/{$0}ENTER/;
+    $munged-source ~~ s:Perl5:g:m:sigspace/((?:^|;|})[ \t]*)BEGIN(?=\s)/{$0}ENTER/;
+    $munged-source ~~ s:Perl5:g:m:sigspace/((?:^|;|})[ \t]*)CHECK(?=\s)/{$0}ENTER/;
 
     my $parsed = $g.parse(
         $munged-source,
