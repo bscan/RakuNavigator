@@ -19,10 +19,11 @@ export async function rakucompile(textDocument: TextDocument, workspaceFolders: 
     
     const navigatorPath = join(dirname(__dirname), 'src', 'raku', 'navigator.raku');
 
-    let rakuParams: string[] = [navigatorPath];
+    let rakuParams: string[] = [];
     const filePath = Uri.parse(textDocument.uri).fsPath;
 
     rakuParams = rakuParams.concat(getIncPaths(workspaceFolders, settings));
+    rakuParams = rakuParams.concat(navigatorPath);
     rakuParams = rakuParams.concat(filePath);
     
     nLog(`Starting raku compilation check with the equivalent of "cat ${filePath} | ` + settings.rakuPath + " " + rakuParams.join(" ") + "\"", settings);

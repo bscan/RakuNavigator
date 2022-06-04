@@ -2,7 +2,7 @@
   "name": "raku-navigator",
   "displayName": "Raku",
   "description": "Language support for Raku including syntax highlighting and error checking.",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "author": "bscan",
 	"license": "MIT",
 	"icon": "images/Camelia.png",
@@ -78,7 +78,7 @@
 					"scope": "resource",
 					"type": "array",
 					"default": [],
-					"description": "Array of paths added to @INC. You can use $workspaceRoot as a placeholder."
+					"description": "Array of paths added to @INC. You can use $workspaceFolder as a placeholder."
 				},
         "raku.logging": {
 					"scope": "resource",
