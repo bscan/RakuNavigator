@@ -15,8 +15,7 @@
 		"url": "https://github.com/bscan/RakuNavigator"
 	},
   "activationEvents": [
-		"onLanguage:raku",
-    "onLanguage:perl6"
+		"onLanguage:raku"
 	],
   "main": "./client/out/extension",
 
@@ -57,10 +56,6 @@
     "snippets": [
       {
         "language": "raku",
-        "path": "./snippets/rakuSnippets.json"
-      },
-      {
-        "language": "perl6",
         "path": "./snippets/rakuSnippets.json"
       }
     ],

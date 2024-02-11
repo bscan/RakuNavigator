@@ -1,11 +1,6 @@
 {
-	"scopeName": "source.raku",
-	"information_for_contributors": [
-		"This file has been initiliazed from https://github.com/Raku/atom-language-perl6/blob/master/grammars/raku.cson",
-		"with minor tweaks made"
-	],
-	"name": "Raku",
 	"fileTypes": [
+	  "nqp",
 	  "raku",
 	  "rakumod",
 	  "rakudoc",
@@ -17,6 +12,7 @@
 	  "pod6"
 	],
 	"firstLineMatch": "(?x) ^ \\s* (?: use \\s v6 | =begin \\s pod | =comment | \\#!(?: (?:perl6|raku)|/.*(?:perl6|raku) (?! \\S)) | my\\s*class )",
+	"name": "Raku",
 	"patterns": [
 	  {
 		"begin": "^\\s*(=)(finish)",
@@ -51,8 +47,8 @@
 			"name": "entity.other.attribute-name.paragraph.raku"
 		  }
 		},
-		"end": "(?=^\\s*$|^\\s*=\\w+.*$)",
 		"contentName": "comment.block.paragraph.raku",
+		"end": "(?=^\\s*$|^\\s*=\\w+.*$)",
 		"patterns": [
 		  {
 			"include": "#comment-block-syntax"
@@ -63,7 +59,6 @@
 		"include": "#comment-block-abbreviated"
 	  },
 	  {
-		"match": "^\\s*(#)([\\|\\=])(.*)\\n",
 		"captures": {
 		  "1": {
 			"name": "comment.punctuation.pound.raku"
@@ -75,6 +70,7 @@
 			"name": "comment.inline.declarator.raku"
 		  }
 		},
+		"match": "^\\s*(#)([\\|\\=])(.*)\\n",
 		"name": "meta.documentation.block.declarator.raku"
 	  },
 	  {
@@ -538,7 +534,6 @@
 		"include": "#p5_regex"
 	  },
 	  {
-		"match": "(?x)\n(?<=\n  ^\n | ^\\s\n | [\\s\\(] [^\\p{Nd}\\p{L}]\n | ~~\\s|~~\\s\\s|match\\(\n | match:\\s\n)\n([/]) # Solidus\n(.*?) # Regex contents\n(?: (?<!\\\\)|(?<=\\\\\\\\) ) (/) # Ending",
 		"captures": {
 		  "1": {
 			"name": "punctuation.definition.regexp.raku"
@@ -557,11 +552,11 @@
 		  "3": {
 			"name": "punctuation.definition.regexp.raku"
 		  }
-		}
+		},
+		"match": "(?x)\n(?<=\n  ^\n | ^\\s\n | [\\s\\(] [^\\p{Nd}\\p{L}]\n | ~~\\s|~~\\s\\s|match\\(\n | match:\\s\n)\n([/]) # Solidus\n(.*?) # Regex contents\n(?: (?<!\\\\)|(?<=\\\\\\\\) ) (/) # Ending"
 	  },
 	  {
 		"begin": "(?x)\n(?<= [=,(\\[]|when|=>|~~) \\s*\n(?:\n  (m|rx|s)?\n  (\n    (?:\n      (?<!:P5) # < This can maybe be removed because we\n      \\s*:\\w+\n      (?!\\s*:P5) # < include p5_regex above it\n    )*\n  )\n) # With the m or rx\n\\s*\n([/]) # Solidus",
-		"end": "(?x) (?: (?<!\\\\)|(?<=\\\\\\\\)|(?<!')|(?<=\\\\ ') ) (/)",
 		"beginCaptures": {
 		  "1": {
 			"name": "string.regexp.construct.raku"
@@ -573,12 +568,13 @@
 			"name": "punctuation.definition.regexp.raku"
 		  }
 		},
+		"contentName": "string.regexp.raku",
+		"end": "(?x) (?: (?<!\\\\)|(?<=\\\\\\\\)|(?<!')|(?<=\\\\ ') ) (/)",
 		"endCaptures": {
 		  "1": {
 			"name": "punctuation.definition.regexp.raku"
 		  }
 		},
-		"contentName": "string.regexp.raku",
 		"patterns": [
 		  {
 			"include": "#interpolation"
@@ -601,13 +597,13 @@
 			"name": "punctuation.definition.regexp.raku"
 		  }
 		},
+		"contentName": "fstring.regexp.raku",
 		"end": "(?x) (?: (?<!\\\\)|(?<=\\\\\\\\) ) (\\})",
 		"endCaptures": {
 		  "1": {
 			"name": "punctuation.definition.regexp.raku"
 		  }
 		},
-		"contentName": "fstring.regexp.raku",
 		"patterns": [
 		  {
 			"include": "#interpolation"
@@ -630,13 +626,13 @@
 			"name": "punctuation.definition.regexp.raku"
 		  }
 		},
+		"contentName": "string.regexp.raku",
 		"end": "(?<!\\\\)(\\})",
 		"endCaptures": {
 		  "1": {
 			"name": "punctuation.definition.regexp.raku"
 		  }
 		},
-		"contentName": "string.regexp.raku",
 		"patterns": [
 		  {
 			"include": "#interpolation"
@@ -659,13 +655,13 @@
 			"name": "punctuation.definition.regexp.raku"
 		  }
 		},
+		"contentName": "string.regexp.raku",
 		"end": "(?<!\\\\)(\\])",
 		"endCaptures": {
 		  "1": {
 			"name": "punctuation.definition.regexp.raku"
 		  }
 		},
-		"contentName": "string.regexp.raku",
 		"patterns": [
 		  {
 			"include": "#interpolation"
@@ -708,13 +704,13 @@
 			"name": "punctuation.definition.regexp.slash.raku"
 		  }
 		},
+		"contentName": "string.regexp.slash.raku",
 		"end": "(?x) (?: (?<!\\\\)|(?<=\\\\\\\\) ) (/)",
 		"endCaptures": {
 		  "1": {
 			"name": "punctuation.definition.regexp.slash.raku"
 		  }
 		},
-		"contentName": "string.regexp.slash.raku",
 		"patterns": [
 		  {
 			"include": "#interpolation"
@@ -737,13 +733,13 @@
 			"name": "punctuation.definition.regexp.brace.raku"
 		  }
 		},
+		"contentName": "string.regexp.brace.raku",
 		"end": "(?x) (?: (?<!\\\\)|(?<=\\\\\\\\) ) (})",
 		"endCaptures": {
 		  "1": {
 			"name": "punctuation.definition.regexp.brace.raku"
 		  }
 		},
-		"contentName": "string.regexp.brace.raku",
 		"patterns": [
 		  {
 			"include": "#interpolation"
@@ -766,13 +762,13 @@
 			"name": "punctuation.definition.regexp.angle.raku"
 		  }
 		},
+		"contentName": "string.regexp.angle.raku",
 		"end": "(?x) (?: (?<!\\\\)|(?<=\\\\\\\\) ) (>)",
 		"endCaptures": {
 		  "1": {
 			"name": "punctuation.definition.regexp.angle.raku"
 		  }
 		},
-		"contentName": "string.regexp.angle.raku",
 		"patterns": [
 		  {
 			"include": "#interpolation"
@@ -795,13 +791,13 @@
 			"name": "punctuation.definition.regexp.paren.raku"
 		  }
 		},
+		"contentName": "string.regexp.paren.raku",
 		"end": "(?x) (?: (?<!\\\\)|(?<=\\\\\\\\) ) (\\))",
 		"endCaptures": {
 		  "1": {
 			"name": "punctuation.definition.regexp.paren.raku"
 		  }
 		},
-		"contentName": "string.regexp.paren.raku",
 		"patterns": [
 		  {
 			"include": "#interpolation"
@@ -824,13 +820,13 @@
 			"name": "punctuation.definition.regexp.bracket.raku"
 		  }
 		},
+		"contentName": "string.regexp.bracket.raku",
 		"end": "(?x) (?: (?<!\\\\)|(?<=\\\\\\\\) ) (\\])",
 		"endCaptures": {
 		  "1": {
 			"name": "punctuation.definition.regexp.bracket.raku"
 		  }
 		},
-		"contentName": "string.regexp.bracket.raku",
 		"patterns": [
 		  {
 			"include": "#interpolation"
@@ -853,13 +849,13 @@
 			"name": "punctuation.definition.regexp.left_double_right_double.raku"
 		  }
 		},
+		"contentName": "string.regexp.left_double_right_double.raku",
 		"end": "(?x) (?: (?<!\\\\)|(?<=\\\\\\\\) ) (”)",
 		"endCaptures": {
 		  "1": {
 			"name": "punctuation.definition.regexp.left_double_right_double.raku"
 		  }
 		},
-		"contentName": "string.regexp.left_double_right_double.raku",
 		"patterns": [
 		  {
 			"include": "#interpolation"
@@ -882,13 +878,13 @@
 			"name": "punctuation.definition.regexp.left_double-low-q_right_double.raku"
 		  }
 		},
+		"contentName": "string.regexp.left_double-low-q_right_double.raku",
 		"end": "(?x) (?: (?<!\\\\)|(?<=\\\\\\\\) ) (”|“)",
 		"endCaptures": {
 		  "1": {
 			"name": "punctuation.definition.regexp.left_double-low-q_right_double.raku"
 		  }
 		},
-		"contentName": "string.regexp.left_double-low-q_right_double.raku",
 		"patterns": [
 		  {
 			"include": "#interpolation"
@@ -911,13 +907,13 @@
 			"name": "punctuation.definition.regexp.left_single_right_single.raku"
 		  }
 		},
+		"contentName": "string.regexp.left_single_right_single.raku",
 		"end": "(?x) (?: (?<!\\\\)|(?<=\\\\\\\\) ) (’)",
 		"endCaptures": {
 		  "1": {
 			"name": "punctuation.definition.regexp.left_single_right_single.raku"
 		  }
 		},
-		"contentName": "string.regexp.left_single_right_single.raku",
 		"patterns": [
 		  {
 			"include": "#interpolation"
@@ -940,13 +936,13 @@
 			"name": "punctuation.definition.regexp.low-q_left_single.raku"
 		  }
 		},
+		"contentName": "string.regexp.low-q_left_single.raku",
 		"end": "(?x) (?: (?<!\\\\)|(?<=\\\\\\\\) ) (‘)",
 		"endCaptures": {
 		  "1": {
 			"name": "punctuation.definition.regexp.low-q_left_single.raku"
 		  }
 		},
-		"contentName": "string.regexp.low-q_left_single.raku",
 		"patterns": [
 		  {
 			"include": "#interpolation"
@@ -969,13 +965,13 @@
 			"name": "punctuation.definition.regexp.fw_cornerbracket.raku"
 		  }
 		},
+		"contentName": "string.regexp.fw_cornerbracket.raku",
 		"end": "(?x) (?: (?<!\\\\)|(?<=\\\\\\\\) ) (」)",
 		"endCaptures": {
 		  "1": {
 			"name": "punctuation.definition.regexp.fw_cornerbracket.raku"
 		  }
 		},
-		"contentName": "string.regexp.fw_cornerbracket.raku",
 		"patterns": [
 		  {
 			"include": "#interpolation"
@@ -998,13 +994,13 @@
 			"name": "punctuation.definition.regexp.hw_cornerbracket.raku"
 		  }
 		},
+		"contentName": "string.regexp.hw_cornerbracket.raku",
 		"end": "(?x) (?: (?<!\\\\)|(?<=\\\\\\\\) ) (｣)",
 		"endCaptures": {
 		  "1": {
 			"name": "punctuation.definition.regexp.hw_cornerbracket.raku"
 		  }
 		},
-		"contentName": "string.regexp.hw_cornerbracket.raku",
 		"patterns": [
 		  {
 			"include": "#interpolation"
@@ -1027,13 +1023,13 @@
 			"name": "punctuation.definition.regexp.chevron.raku"
 		  }
 		},
+		"contentName": "string.regexp.chevron.raku",
 		"end": "(?x) (?: (?<!\\\\)|(?<=\\\\\\\\) ) (»)",
 		"endCaptures": {
 		  "1": {
 			"name": "punctuation.definition.regexp.chevron.raku"
 		  }
 		},
-		"contentName": "string.regexp.chevron.raku",
 		"patterns": [
 		  {
 			"include": "#interpolation"
@@ -1056,13 +1052,13 @@
 			"name": "punctuation.definition.regexp.s-shaped-bag-delimiter.raku"
 		  }
 		},
+		"contentName": "string.regexp.s-shaped-bag-delimiter.raku",
 		"end": "(?x) (?: (?<!\\\\)|(?<=\\\\\\\\) ) (⟆)",
 		"endCaptures": {
 		  "1": {
 			"name": "punctuation.definition.regexp.s-shaped-bag-delimiter.raku"
 		  }
 		},
-		"contentName": "string.regexp.s-shaped-bag-delimiter.raku",
 		"patterns": [
 		  {
 			"include": "#interpolation"
@@ -1085,13 +1081,13 @@
 			"name": "punctuation.definition.regexp.any.raku"
 		  }
 		},
+		"contentName": "string.regexp.any.raku",
 		"end": "(?x) (?: (?<!\\\\)|(?<=\\\\\\\\) ) (\\3)",
 		"endCaptures": {
 		  "1": {
 			"name": "punctuation.definition.regexp.any.raku"
 		  }
 		},
-		"contentName": "string.regexp.any.raku",
 		"patterns": [
 		  {
 			"include": "#interpolation"
@@ -1129,16 +1125,17 @@
 			"name": "entity.other.attribute-name.heredoc.delimiter.raku"
 		  }
 		},
+		"name": "string.quoted.heredoc.raku",
 		"patterns": [
 		  {
 			"begin": "(?<=/)",
 			"end": "\\n",
+			"name": "meta.heredoc.continuation.raku",
 			"patterns": [
 			  {
 				"include": "$self"
 			  }
-			],
-			"name": "meta.heredoc.continuation.raku"
+			]
 		  },
 		  {
 			"begin": "^",
@@ -1153,8 +1150,7 @@
 			"match": "(?x) ^ (?: . | \\n )* $",
 			"name": "string.quoted.qq.heredoc.raku"
 		  }
-		],
-		"name": "string.quoted.heredoc.raku"
+		]
 	  },
 	  {
 		"begin": "(?x) (?: ( [qQ](?!/)|qw|qww|qx|qqx ) \\s* ( (?:\\s*:\\w+)*\\s*: (?: to|heredoc ) )\\s* | (qto|Qto) \\s* ( (?:\\s*:\\w+)* )\\s* ) / (\\S+) /",
@@ -1181,23 +1177,23 @@
 			"name": "entity.other.attribute-name.heredoc.delimiter.raku"
 		  }
 		},
+		"name": "meta.heredoc.raku",
 		"patterns": [
 		  {
 			"begin": "(?<=/)",
 			"end": "\\n",
+			"name": "meta.heredoc.continuation.raku",
 			"patterns": [
 			  {
 				"include": "$self"
 			  }
-			],
-			"name": "meta.heredoc.continuation.raku"
+			]
 		  },
 		  {
 			"match": "(?x) ^ (?: . | \\n )* $",
 			"name": "string.quoted.q.heredoc.raku"
 		  }
-		],
-		"name": "meta.heredoc.raku"
+		]
 	  },
 	  {
 		"include": "source.quoting.raku"
@@ -1220,7 +1216,6 @@
 		  "4": {
 			"patterns": [
 			  {
-				"match": "(?x) ( [\\p{Digit}\\p{Alpha}'\\-_]+ ) \\b (:)? (\\w+ \\b )? (\\S+  )?",
 				"captures": {
 				  "1": {
 					"name": "entity.name.function.raku"
@@ -1238,7 +1233,8 @@
 					  }
 					]
 				  }
-				}
+				},
+				"match": "(?x) ( [\\p{Nd}\\p{L}\\p{M}'\\-_]+ ) \\b (:)? (\\w+ \\b )? (\\S+  )?"
 			  }
 			]
 		  }
@@ -1265,11 +1261,10 @@
 			"name": "entity.name.function.regexp.named.TOP.raku"
 		  },
 		  {
-			"match": "[\\p{Digit}\\p{Alpha}'\\-_]+",
+			"match": "[\\p{Nd}\\p{L}\\p{M}'\\-_]+",
 			"name": "entity.name.function.regexp.named.raku"
 		  },
 		  {
-			"match": "(:)(\\w+)",
 			"captures": {
 			  "1": {
 				"name": "punctuation.definition.regexp.adverb.raku"
@@ -1278,26 +1273,27 @@
 				"name": "support.type.class.adverb.raku"
 			  }
 			},
+			"match": "(:)(\\w+)",
 			"name": "meta.regexp.named.adverb.raku"
 		  },
 		  {
 			"begin": "<",
-			"end": "(?x) \\\\\\\\|(?<!\\\\) ( > ) (?=[\\s\\{])",
-			"contentName": "string.array.words.raku"
+			"contentName": "string.array.words.raku",
+			"end": "(?x) \\\\\\\\|(?<!\\\\) ( > ) (?=[\\s\\{])"
 		  },
 		  {
 			"begin": "«",
-			"end": "(?x)  \\\\\\\\|(?<!\\\\) ( » ) (?=[\\s\\{])",
-			"contentName": "string.array.words.chevron.raku"
+			"contentName": "string.array.words.chevron.raku",
+			"end": "(?x)  \\\\\\\\|(?<!\\\\) ( » ) (?=[\\s\\{])"
 		  },
 		  {
 			"begin": "\\(",
-			"end": "(?<!\\\\)\\)",
 			"captures": {
 			  "0": {
 				"name": "punctuation.definition.regexp.named.signature.perlfe"
 			  }
 			},
+			"end": "(?<!\\\\)\\)",
 			"name": "meta.regexp.named.signature.raku",
 			"patterns": [
 			  {
@@ -1307,12 +1303,12 @@
 		  },
 		  {
 			"begin": "\\{",
-			"end": "(?=\\})",
 			"captures": {
 			  "0": {
 				"name": "punctuation.definition.regex.named.raku"
 			  }
 			},
+			"end": "(?=\\})",
 			"name": "meta.regexp.named.block.raku",
 			"patterns": [
 			  {
@@ -1348,13 +1344,13 @@
 			"name": "span.keyword.operator.array.words.raku"
 		  }
 		},
+		"contentName": "string.array.words.raku",
 		"end": "(?x)  \\\\\\\\|(?<!\\\\) ( > )",
 		"endCaptures": {
 		  "1": {
 			"name": "span.keyword.operator.array.words.raku"
 		  }
 		},
-		"contentName": "string.array.words.raku",
 		"patterns": [
 		  {
 			"include": "source.quoting.raku#q_bracket_string_content"
@@ -1372,13 +1368,13 @@
 			"name": "span.keyword.operator.array.words.raku"
 		  }
 		},
+		"contentName": "string.array.words.raku",
 		"end": "(?x) \\\\\\\\|(?<!\\\\) ( > )",
 		"endCaptures": {
 		  "1": {
 			"name": "span.keyword.operator.array.words.raku"
 		  }
-		},
-		"contentName": "string.array.words.raku"
+		}
 	  },
 	  {
 		"match": "\\b(for|loop|repeat|while|until|gather|given)(?!\\-)\\b",
@@ -1421,15 +1417,14 @@
 		"name": "constant.language.pragma.raku"
 	  },
 	  {
-		"match": "(?x)(?<![:\\-\\w]) (Backtrace|Exception|Failure|X) (?: \\:\\:[a-zA-Z]+ )* \\b",
 		"captures": {
 		  "0": {
 			"name": "support.type.exception.raku"
 		  }
-		}
+		},
+		"match": "(?x)(?<![:\\-\\w]) (Backtrace|Exception|Failure|X) (?: \\:\\:[a-zA-Z]+ )* \\b"
 	  },
 	  {
-		"match": "(?x)\\b(?<!:)(\n  AST|Any|Array|Associative|Attribute|Bag|BagHash|Baggy|\n  Blob|Block|Bool|Callable|Capture|Channel|Code|Complex|Cool|\n  CurrentThreadScheduler|Cursor|Date|DateTime|Dateish|Duration|\n  Enum|FatRat|Grammar|Hash|IO|Instant|Iterable|\n  Iterator|Junction|Label|List|Lock|Macro|Map|Match|Metamodel|\n  Method|Mix|MixHash|Mixy|Mu|Nil|Numeric|ObjAt|Pair|\n  Parameter|Pod|Positional|PositionalBindFailover|Proc|Promise|\n  Proxy|QuantHash|Range|Rat|Rational|Real|Regex|Routine|Scheduler|\n  Seq|Set|SetHash|Setty|Signature|Slip|Stash|Str|str|Stringy|Sub|\n  Submethod|Supply|Tap|Temporal|Thread|ThreadPoolScheduler|\n  Variable|Version|Whatever|WhateverCode|bool|size_t|\n  Int|int|int1|int2|int4|int8|int16|int32|int64|\n  Rat|rat|rat1|rat2|rat4|rat8|rat16|rat32|rat64|\n  Buf|buf|buf1|buf2|buf4|buf8|buf16|buf32|buf64|\n  UInt|uint|uint1|uint2|uint4|uint8|uint16|uint32|uint64|\n  utf8|utf16|utf32|Num|num|num32|num64|IntStr|NumStr|\n  RatStr|ComplexStr|CArray|Pointer|long|longlong|\n  # These are for types which have sub types\n  Order|More|Less|Same\n)\\b (?!\\s*=>)",
 		"captures": {
 		  "1": {
 			"name": "support.type.raku"
@@ -1437,15 +1432,14 @@
 		  "2": {
 			"name": "support.class.type.adverb.raku"
 		  }
-		}
+		},
+		"match": "(?x)\\b(?<!:)(\n  AST|Any|Array|Associative|Attribute|Bag|BagHash|Baggy|\n  Blob|Block|Bool|Callable|Capture|Channel|Code|Complex|Cool|\n  CurrentThreadScheduler|Cursor|Date|DateTime|Dateish|Duration|\n  Enum|FatRat|Grammar|Hash|IO|Instant|Iterable|\n  Iterator|Junction|Label|List|Lock|Macro|Map|Match|Metamodel|\n  Method|Mix|MixHash|Mixy|Mu|Nil|Numeric|ObjAt|Pair|\n  Parameter|Pod|Positional|PositionalBindFailover|Proc|Promise|\n  Proxy|QuantHash|Range|Rat|Rational|Real|Regex|Routine|Scheduler|\n  Seq|Set|SetHash|Setty|Signature|Slip|Stash|Str|str|Stringy|Sub|\n  Submethod|Supply|Tap|Temporal|Thread|ThreadPoolScheduler|\n  Variable|Version|Whatever|WhateverCode|bool|size_t|\n  Int|int|int1|int2|int4|int8|int16|int32|int64|\n  Rat|rat|rat1|rat2|rat4|rat8|rat16|rat32|rat64|\n  Buf|buf|buf1|buf2|buf4|buf8|buf16|buf32|buf64|\n  UInt|uint|uint1|uint2|uint4|uint8|uint16|uint32|uint64|\n  utf8|utf16|utf32|Num|num|num32|num64|IntStr|NumStr|\n  RatStr|ComplexStr|CArray|Pointer|long|longlong|\n  # These are for types which have sub types\n  Order|More|Less|Same\n)\\b (?!\\s*=>)"
 	  },
 	  {
 		"match": "(?x) ( \\[ / \\] )",
 		"name": "keyword.operator.reduction.raku"
 	  },
 	  {
-		"match": "(?<=\\w)(\\:)([DU_])\\b",
-		"name": "meta.adverb.definedness.raku",
 		"captures": {
 		  "1": {
 			"name": "keyword.operator.adverb.raku"
@@ -1453,19 +1447,21 @@
 		  "2": {
 			"name": "keyword.other.special-method.definedness.raku"
 		  }
-		}
+		},
+		"match": "(?<=\\w)(\\:)([DU_])\\b",
+		"name": "meta.adverb.definedness.raku"
 	  },
 	  {
 		"match": "(?x)\\b( div|mod|gcd|lcm|x|xx|temp|let|but|cmp|leg| eq|ne|gt|ge|lt|le|before|after|eqv|min|max|ff|fff|not|so|Z| and|andthen|or|orelse )\\b(?!\\-)| \\b(X)(?!:)\\b",
 		"name": "keyword.operator.word.raku"
 	  },
 	  {
-		"match": "(=~=|≅)",
 		"captures": {
 		  "1": {
 			"name": "keyword.operator.approx-equal.raku"
 		  }
 		},
+		"match": "(=~=|≅)",
 		"name": "meta.operator.non.ligature.raku"
 	  },
 	  {
@@ -1476,8 +1472,6 @@
 		"include": "#special_variables"
 	  },
 	  {
-		"match": "(?x)(?<=\\[) \\s* (\\*) \\s* ([\\-\\*%\\^\\+\\/]|div|mod|gcd|lcm) \\s* (\\d+) \\s* (?=\\])",
-		"name": "meta.subscript.whatever.raku",
 		"captures": {
 		  "1": {
 			"name": "constant.language.whatever.raku"
@@ -1488,28 +1482,30 @@
 		  "3": {
 			"name": "constant.numeric.back-from.raku"
 		  }
-		}
+		},
+		"match": "(?x)(?<=\\[) \\s* (\\*) \\s* ([\\-\\*%\\^\\+\\/]|div|mod|gcd|lcm) \\s* (\\d+) \\s* (?=\\])",
+		"name": "meta.subscript.whatever.raku"
 	  },
 	  {
 		"match": "\\*\\s*(?=\\])",
 		"name": "constant.language.whatever.hack.raku"
 	  },
 	  {
-		"match": "(?x)\\b(?<![\\-\\\\])( :: )?(exists)(?!\\-)\\b(?!\\s*=>)",
 		"captures": {
 		  "1": {
 			"name": "keyword.operator.colon.raku"
 		  }
 		},
+		"match": "(?x)\\b(?<![\\-\\\\])( :: )?(exists)(?!\\-)\\b(?!\\s*=>)",
 		"name": "support.function.raku"
 	  },
 	  {
-		"match": "(?x)\\b(?<![\\-:\\\\])( :: )?( eager|hyper|substr|index|rindex|grep|map|sort|join|lines|hints |chmod|split|reduce|min|max|reverse|truncate|zip|cat|roundrobin |classify|first|sum|keys|values|pairs|defined|delete|exists |elems|end|kv|any|all|one|wrap|shape|key|value|name|pop|push |shift|splice|unshift|floor|ceiling|abs|exp|log|log10|rand|sign |sqrt|sin|cos|tan|round|strand|roots|cis|unpolar|polar|atan2 |pick|chop|chomp|lc|lcfirst|uc|ucfirst|capitalize|mkdir |normalize|pack|unpack|quotemeta|comb|samecase|sameaccent|chars |nfd|nfc|nfkd|nfkc|printf|sprintf|caller|evalfile|run|runinstead |nothing|want|bless|chr|ord|ords|gmtime|time|eof|localtime|gethost |getpw|chroot|getlogin|getpeername|kill|fork|wait|perl|graphs |codes|bytes|clone|print|open|read|write|readline|say|seek|close |opendir|readdir|slurp|spurt|shell|run|pos|fmt|vec|link|unlink |symlink|unique|pair|asin|atan|sec|cosec|cotan|asec|acosec|acotan |sinh|cosh|tanh|asinh|done|acos|acosh|atanh|sech|cosech|cotanh |sech|acosech|acotanh|asech|ok|nok|plan-ok|dies-ok|lives-ok|skip |todo|pass|flunk|force-todo|use-ok|isa-ok|diag|is-deeply|isnt |like|skip-rest|unlike|cmp-ok|eval-dies-ok|nok-error|cmp-ok |eval-lives-ok|approx|is-approx|throws-ok|version-lt|plan|EVAL |succ|pred|times|nonce|once|signature|new|connect|operator|undef |undefine|sleep|from|to|infix|postfix|prefix|circumfix|can-ok |postcircumfix|minmax|lazy|count|unwrap|getc|pi|tau|context|void |quasi|body|each|contains|rewinddir|subst|can|isa|flush|arity |assuming|rewind|callwith|callsame|nextwith|nextsame|attr|does-ok |eval-elsewhere|none|not|srand|so|trim|trim-start|trim-end|lastcall |WHAT|WHY|WHERE|HOW|WHICH|VAR|WHO|WHENCE|ACCEPTS|REJECTS|not |iterator|by|re|im|invert|flip|gist|flat|tree|is-prime |throws-like|trans|race|hyper|tap|emit|done-testing|quit|dd|note |prepend|categorize|antipairs|categorize-list|parse-base|base |starts-with|ends-with|put|append|tail|\\x{03C0}|\\x{03C4}|\\x{212F} |get|words|new-from-pairs|uniname|uninames|uniprop|uniprops |slurp-rest|throw|break|keep|match|trim-leading|trim-trailing |is-lazy|pull-one|push-exactly|push-at-least|push-all|push-until-lazy |sink-all|skip-at-least|skip-at-least-pull-one )(?!\\-)\\b(?!\\s*=>)",
 		"captures": {
 		  "1": {
 			"name": "keyword.operator.colon.raku"
 		  }
 		},
+		"match": "(?x)\\b(?<![\\-:\\\\])( :: )?( eager|hyper|substr|index|rindex|grep|map|sort|join|lines|hints |chmod|split|reduce|min|max|reverse|truncate|zip|cat|roundrobin |classify|first|sum|keys|values|pairs|defined|delete|exists |elems|end|kv|any|all|one|wrap|shape|key|value|name|pop|push |shift|splice|unshift|floor|ceiling|abs|exp|log|log10|rand|sign |sqrt|sin|cos|tan|round|strand|roots|cis|unpolar|polar|atan2 |pick|chop|chomp|lc|lcfirst|uc|ucfirst|capitalize|mkdir |normalize|pack|unpack|quotemeta|comb|samecase|sameaccent|chars |nfd|nfc|nfkd|nfkc|printf|sprintf|caller|evalfile|run|runinstead |nothing|want|bless|chr|ord|ords|gmtime|time|eof|localtime|gethost |getpw|chroot|getlogin|getpeername|kill|fork|wait|perl|graphs |codes|bytes|clone|print|open|read|write|readline|say|seek|close |opendir|readdir|slurp|spurt|shell|run|pos|fmt|vec|link|unlink |symlink|unique|pair|asin|atan|sec|cosec|cotan|asec|acosec|acotan |sinh|cosh|tanh|asinh|done|acos|acosh|atanh|sech|cosech|cotanh |sech|acosech|acotanh|asech|ok|nok|plan-ok|dies-ok|lives-ok|skip |todo|pass|flunk|force-todo|use-ok|isa-ok|diag|is-deeply|isnt |like|skip-rest|unlike|cmp-ok|eval-dies-ok|nok-error|cmp-ok |eval-lives-ok|approx|is-approx|throws-ok|version-lt|plan|EVAL |succ|pred|times|nonce|once|signature|new|connect|operator|undef |undefine|sleep|from|to|infix|postfix|prefix|circumfix|can-ok |postcircumfix|minmax|lazy|count|unwrap|getc|pi|tau|context|void |quasi|body|each|contains|rewinddir|subst|can|isa|flush|arity |assuming|rewind|callwith|callsame|nextwith|nextsame|attr|does-ok |eval-elsewhere|none|not|srand|so|trim|trim-start|trim-end|lastcall |WHAT|WHY|WHERE|HOW|WHICH|VAR|WHO|WHENCE|ACCEPTS|REJECTS|not |iterator|by|re|im|invert|flip|gist|flat|tree|is-prime |throws-like|trans|race|hyper|tap|emit|done-testing|quit|dd|note |prepend|categorize|antipairs|categorize-list|parse-base|base |starts-with|ends-with|put|append|tail|\\x{03C0}|\\x{03C4}|\\x{212F} |get|words|new-from-pairs|uniname|uninames|uniprop|uniprops |slurp-rest|throw|break|keep|match|trim-leading|trim-trailing |is-lazy|pull-one|push-exactly|push-at-least|push-all|push-until-lazy |sink-all|skip-at-least|skip-at-least-pull-one )(?!\\-)\\b(?!\\s*=>)",
 		"name": "support.function.raku"
 	  },
 	  {
@@ -1541,13 +1537,13 @@
 			"name": "punctuation.definition.radix.raku"
 		  }
 		},
+		"contentName": "constant.numeric.raku",
 		"end": ">",
 		"endCaptures": {
 		  "0": {
 			"name": "punctuation.definition.radix.raku"
 		  }
-		},
-		"contentName": "constant.numeric.raku"
+		}
 	  },
 	  {
 		"begin": "\\{",
@@ -1571,52 +1567,10 @@
 	  }
 	],
 	"repository": {
-	  "numbers": {
-		"patterns": [
-		  {
-			"match": "(?x)\n(?<= ^ | [=,;^\\s{\\[(/] | \\.\\. )\n[-−+]?\n0[bodx]\\w+",
-			"name": "constant.numeric.radix.raku"
-		  },
-		  {
-			"match": "(?x)\n          (?<= ^ | [×÷*=,:;^\\s{\\[(/] | \\.\\. | … )\n          (?: \\^? [+\\-−] )?\n(?:\n    (?: \\d+ (?: [\\_\\d]+ \\d )? )\n    (?: \\.  \\d+ (?: [\\_\\d]+ \\d )? )?\n)\n(?:  e  (?:[-−+])? \\d+ (?: [\\_\\d]+ \\d )? )?",
-			"name": "constant.numeric.raku"
-		  },
-		  {
-			"match": "(?x)\n          (?<= ^ | [×÷*=,:;^\\s{\\[(/] | \\.\\. )\n          (?: [+-−] )?\n(?:\n    (?: \\.  \\d+ (?: [\\_\\d]+ \\d )? )\n)\n(?:  e  (?:[-−+])? \\d+ (?: [\\_\\d]+ \\d )? )?",
-			"name": "constant.numeric.raku"
-		  }
-		]
-	  },
-	  "comment-block-delimited": {
-		"patterns": [
-		  {
-			"begin": "^\\s*(=)(begin)\\s+(\\w+)",
-			"end": "^\\s*(=)(end)\\s+(\\w+)",
-			"captures": {
-			  "1": {
-				"name": "storage.modifier.block.delimited.raku"
-			  },
-			  "2": {
-				"name": "keyword.operator.block.delimited.raku"
-			  },
-			  "3": {
-				"name": "entity.other.attribute-name.block.delimited.raku"
-			  }
-			},
-			"contentName": "comment.block.delimited.raku",
-			"patterns": [
-			  {
-				"include": "#comment-block-syntax"
-			  }
-			]
-		  }
-		]
-	  },
 	  "comment-block-abbreviated": {
 		"patterns": [
 		  {
 			"begin": "^\\s*(=)(head\\w*)\\s+(.+?)\\s*$",
-			"end": "(?=^\\s*$|^\\s*=\\w+.*$)",
 			"captures": {
 			  "1": {
 				"name": "storage.modifier.block.abbreviated.raku"
@@ -1634,6 +1588,7 @@
 			  }
 			},
 			"contentName": "entity.name.section.head.abbreviated.raku",
+			"end": "(?=^\\s*$|^\\s*=\\w+.*$)",
 			"patterns": [
 			  {
 				"include": "#comment-block-syntax"
@@ -1642,7 +1597,6 @@
 		  },
 		  {
 			"begin": "^\\s*(=)(\\w+)\\s+(.+?)\\s*$",
-			"end": "(?=^\\s*$|^\\s*=\\w+.*$)",
 			"captures": {
 			  "1": {
 				"name": "storage.modifier.block.abbreviated.raku"
@@ -1660,9 +1614,816 @@
 			  }
 			},
 			"contentName": "comment.block.abbreviated.raku",
+			"end": "(?=^\\s*$|^\\s*=\\w+.*$)",
 			"patterns": [
 			  {
 				"include": "#comment-block-syntax"
+			  }
+			]
+		  }
+		]
+	  },
+	  "comment-block-delimited": {
+		"patterns": [
+		  {
+			"begin": "^\\s*(=)(begin)\\s+(\\w+)",
+			"captures": {
+			  "1": {
+				"name": "storage.modifier.block.delimited.raku"
+			  },
+			  "2": {
+				"name": "keyword.operator.block.delimited.raku"
+			  },
+			  "3": {
+				"name": "entity.other.attribute-name.block.delimited.raku"
+			  }
+			},
+			"contentName": "comment.block.delimited.raku",
+			"end": "^\\s*(=)(end)\\s+(\\w+)",
+			"patterns": [
+			  {
+				"include": "#comment-block-syntax"
+			  }
+			]
+		  }
+		]
+	  },
+	  "comment-block-syntax": {
+		"patterns": [
+		  {
+			"include": "#comment-block-delimited"
+		  },
+		  {
+			"include": "#comment-block-abbreviated"
+		  },
+		  {
+			"begin": "(?x) (U) (<<<)",
+			"beginCaptures": {
+			  "1": {
+				"name": "support.function.pod.code.raku"
+			  },
+			  "2": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"contentName": "markup.underline.raku",
+			"end": "(?x) (>>>)",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"name": "meta.pod.c.raku",
+			"patterns": [
+			  {
+				"include": "#comment-block-syntax"
+			  },
+			  {
+				"include": "source.quoting.raku#q_triple_angle_string_content"
+			  }
+			]
+		  },
+		  {
+			"begin": "(?x) (I) (<<<)",
+			"beginCaptures": {
+			  "1": {
+				"name": "support.function.pod.code.raku"
+			  },
+			  "2": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"contentName": "markup.italic.raku",
+			"end": "(?x) (>>>)",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"name": "meta.pod.c.raku",
+			"patterns": [
+			  {
+				"include": "#comment-block-syntax"
+			  },
+			  {
+				"include": "source.quoting.raku#q_triple_angle_string_content"
+			  }
+			]
+		  },
+		  {
+			"begin": "(?x) (B) (<<<)",
+			"beginCaptures": {
+			  "1": {
+				"name": "support.function.pod.code.raku"
+			  },
+			  "2": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"contentName": "markup.bold.raku",
+			"end": "(?x) (>>>)",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"name": "meta.pod.c.raku",
+			"patterns": [
+			  {
+				"include": "#comment-block-syntax"
+			  },
+			  {
+				"include": "source.quoting.raku#q_triple_angle_string_content"
+			  }
+			]
+		  },
+		  {
+			"begin": "(?x) ([A-Z]) (<<<)",
+			"beginCaptures": {
+			  "1": {
+				"name": "support.function.pod.code.raku"
+			  },
+			  "2": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"contentName": "markup.raw.code.raku",
+			"end": "(?x) (>>>)",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"name": "meta.pod.c.raku",
+			"patterns": [
+			  {
+				"include": "#comment-block-syntax"
+			  },
+			  {
+				"include": "source.quoting.raku#q_triple_angle_string_content"
+			  }
+			]
+		  },
+		  {
+			"begin": "(?x) (U) (<<)",
+			"beginCaptures": {
+			  "1": {
+				"name": "support.function.pod.code.raku"
+			  },
+			  "2": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"contentName": "markup.underline.raku",
+			"end": "(?x) (>>)",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"name": "meta.pod.c.raku",
+			"patterns": [
+			  {
+				"include": "#comment-block-syntax"
+			  },
+			  {
+				"include": "source.quoting.raku#q_double_angle_string_content"
+			  }
+			]
+		  },
+		  {
+			"begin": "(?x) (I) (<<)",
+			"beginCaptures": {
+			  "1": {
+				"name": "support.function.pod.code.raku"
+			  },
+			  "2": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"contentName": "markup.italic.raku",
+			"end": "(?x) (>>)",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"name": "meta.pod.c.raku",
+			"patterns": [
+			  {
+				"include": "#comment-block-syntax"
+			  },
+			  {
+				"include": "source.quoting.raku#q_double_angle_string_content"
+			  }
+			]
+		  },
+		  {
+			"begin": "(?x) (B) (<<)",
+			"beginCaptures": {
+			  "1": {
+				"name": "support.function.pod.code.raku"
+			  },
+			  "2": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"contentName": "markup.bold.raku",
+			"end": "(?x) (>>)",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"name": "meta.pod.c.raku",
+			"patterns": [
+			  {
+				"include": "#comment-block-syntax"
+			  },
+			  {
+				"include": "source.quoting.raku#q_double_angle_string_content"
+			  }
+			]
+		  },
+		  {
+			"begin": "(?x) ([A-Z]) (<<)",
+			"beginCaptures": {
+			  "1": {
+				"name": "support.function.pod.code.raku"
+			  },
+			  "2": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"contentName": "markup.raw.code.raku",
+			"end": "(?x) (>>)",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"name": "meta.pod.c.raku",
+			"patterns": [
+			  {
+				"include": "#comment-block-syntax"
+			  },
+			  {
+				"include": "source.quoting.raku#q_double_angle_string_content"
+			  }
+			]
+		  },
+		  {
+			"begin": "(?x) (U) (<)",
+			"beginCaptures": {
+			  "1": {
+				"name": "support.function.pod.code.raku"
+			  },
+			  "2": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"contentName": "markup.underline.raku",
+			"end": "(?x) (>)",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"name": "meta.pod.c.raku",
+			"patterns": [
+			  {
+				"include": "#comment-block-syntax"
+			  },
+			  {
+				"include": "source.quoting.raku#q_angle_string_content"
+			  }
+			]
+		  },
+		  {
+			"begin": "(?x) (I) (<)",
+			"beginCaptures": {
+			  "1": {
+				"name": "support.function.pod.code.raku"
+			  },
+			  "2": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"contentName": "markup.italic.raku",
+			"end": "(?x) (>)",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"name": "meta.pod.c.raku",
+			"patterns": [
+			  {
+				"include": "#comment-block-syntax"
+			  },
+			  {
+				"include": "source.quoting.raku#q_angle_string_content"
+			  }
+			]
+		  },
+		  {
+			"begin": "(?x) (B) (<)",
+			"beginCaptures": {
+			  "1": {
+				"name": "support.function.pod.code.raku"
+			  },
+			  "2": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"contentName": "markup.bold.raku",
+			"end": "(?x) (>)",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"name": "meta.pod.c.raku",
+			"patterns": [
+			  {
+				"include": "#comment-block-syntax"
+			  },
+			  {
+				"include": "source.quoting.raku#q_angle_string_content"
+			  }
+			]
+		  },
+		  {
+			"begin": "(?x) ([A-Z]) (<)",
+			"beginCaptures": {
+			  "1": {
+				"name": "support.function.pod.code.raku"
+			  },
+			  "2": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"contentName": "markup.raw.code.raku",
+			"end": "(?x) (>)",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"name": "meta.pod.c.raku",
+			"patterns": [
+			  {
+				"include": "#comment-block-syntax"
+			  },
+			  {
+				"include": "source.quoting.raku#q_angle_string_content"
+			  }
+			]
+		  },
+		  {
+			"begin": "(?x) (U) («)",
+			"beginCaptures": {
+			  "1": {
+				"name": "support.function.pod.code.raku"
+			  },
+			  "2": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"contentName": "markup.underline.raku",
+			"end": "(?x) (»)",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"name": "meta.pod.c.raku",
+			"patterns": [
+			  {
+				"include": "#comment-block-syntax"
+			  },
+			  {
+				"include": "source.quoting.raku#q_chevron_string_content"
+			  }
+			]
+		  },
+		  {
+			"begin": "(?x) (I) («)",
+			"beginCaptures": {
+			  "1": {
+				"name": "support.function.pod.code.raku"
+			  },
+			  "2": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"contentName": "markup.italic.raku",
+			"end": "(?x) (»)",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"name": "meta.pod.c.raku",
+			"patterns": [
+			  {
+				"include": "#comment-block-syntax"
+			  },
+			  {
+				"include": "source.quoting.raku#q_chevron_string_content"
+			  }
+			]
+		  },
+		  {
+			"begin": "(?x) (B) («)",
+			"beginCaptures": {
+			  "1": {
+				"name": "support.function.pod.code.raku"
+			  },
+			  "2": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"contentName": "markup.bold.raku",
+			"end": "(?x) (»)",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"name": "meta.pod.c.raku",
+			"patterns": [
+			  {
+				"include": "#comment-block-syntax"
+			  },
+			  {
+				"include": "source.quoting.raku#q_chevron_string_content"
+			  }
+			]
+		  },
+		  {
+			"begin": "(?x) ([A-Z]) («)",
+			"beginCaptures": {
+			  "1": {
+				"name": "support.function.pod.code.raku"
+			  },
+			  "2": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"contentName": "markup.raw.code.raku",
+			"end": "(?x) (»)",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.section.embedded.pod.code.raku"
+			  }
+			},
+			"name": "meta.pod.c.raku",
+			"patterns": [
+			  {
+				"include": "#comment-block-syntax"
+			  },
+			  {
+				"include": "source.quoting.raku#q_chevron_string_content"
+			  }
+			]
+		  }
+		]
+	  },
+	  "hex_escapes": {
+		"patterns": [
+		  {
+			"captures": {
+			  "1": {
+				"name": "keyword.punctuation.hex.raku"
+			  },
+			  "2": {
+				"name": "keyword.operator.bracket.open.raku"
+			  },
+			  "3": {
+				"name": "routine.name.hex.raku"
+			  },
+			  "4": {
+				"name": "keyword.operator.bracket.close.raku"
+			  }
+			},
+			"match": "(?x) (\\\\x) ( \\[ ) ( [\\dA-Fa-f]+ ) ( \\] )",
+			"name": "punctuation.hex.raku"
+		  }
+		]
+	  },
+	  "interpolation": {
+		"patterns": [
+		  {
+			"captures": {
+			  "1": {
+				"name": "variable.other.identifier.sigil.raku"
+			  },
+			  "2": {
+				"name": "support.class.twigil.interpolated.raku"
+			  },
+			  "5": {
+				"patterns": [
+				  {
+					"begin": "<",
+					"beginCaptures": {
+					  "0": {
+						"name": "keyword.operator.chevron.open.raku"
+					  }
+					},
+					"end": ">",
+					"endCaptures": {
+					  "0": {
+						"name": "keyword.operator.chevron.close.raku"
+					  }
+					}
+				  },
+				  {
+					"begin": "\\[",
+					"beginCaptures": {
+					  "0": {
+						"name": "keyword.operator.bracket.open.raku"
+					  }
+					},
+					"end": "\\]",
+					"endCaptures": {
+					  "0": {
+						"name": "keyword.operator.bracket.close.raku"
+					  }
+					},
+					"patterns": [
+					  {
+						"include": "$self"
+					  }
+					]
+				  }
+				]
+			  },
+			  "6": {
+				"name": "keyword.operator.dot.raku"
+			  },
+			  "7": {
+				"name": "support.function.raku"
+			  },
+			  "8": {
+				"begin": "\\(",
+				"beginCaptures": {
+				  "0": {
+					"name": "keyword.operator.paren.open.raku"
+				  }
+				},
+				"end": "\\)",
+				"endCaptures": {
+				  "0": {
+					"name": "keyword.operator.paren.close.raku"
+				  }
+				},
+				"patterns": [
+				  {
+					"include": "$self"
+				  }
+				]
+			  }
+			},
+			"match": "(?x)\n(?<!\\\\)\n(\\$|@|%|&)\n(?!\\$)\n(\\.|\\*|:|!|\\^|~|=|\\?)?  # Twigils\n([\\p{L}\\p{M}_])             # Must start with Alpha or underscore\n(\n   [\\p{Nd}\\p{L}\\p{M}_]  # have alphanum/underscore, or a ' or -\n|                           # followed by an Alpha or underscore\n   [\\-'] [\\p{L}\\p{M}_]\n)*\n( \\[ .* \\] )?             # postcircumfix [ ]\n## methods\n(?:\n  (?:\n    ( \\. )\n    (\n       [\\p{L}\\p{M}]\n        (?:\n          [\\p{Nd}\\p{L}\\p{M}_]  # have alphanum/underscore, or a ' or -\n        |                          # followed by an Alpha or underscore\n          [\\-'] [\\p{L}\\p{M}_]\n        )*\n\n    )\n  )?\n  ( \\( .*?  \\) )\n)?",
+			"name": "variable.other.identifier.interpolated.raku"
+		  },
+		  {
+			"include": "#hex_escapes"
+		  },
+		  {
+			"include": "#regexp-variables"
+		  },
+		  {
+			"begin": "(?x) (?<! m|rx|m:i|rx:i) (\\{)",
+			"beginCaptures": {
+			  "1": {
+				"name": "punctuation.section.embedded.begin.raku"
+			  }
+			},
+			"end": "(\\})",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.section.embedded.end.raku"
+			  }
+			},
+			"name": "meta.interpolation.raku",
+			"patterns": [
+			  {
+				"include": "$self"
+			  }
+			]
+		  }
+		]
+	  },
+	  "numbers": {
+		"patterns": [
+		  {
+			"match": "(?x)\n(?<= ^ | [=,;^\\s{\\[(/] | \\.\\. )\n[-−+]?\n0[bodx]\\w+",
+			"name": "constant.numeric.radix.raku"
+		  },
+		  {
+			"match": "(?x)\n          (?<= ^ | [×÷*=,:;^\\s{\\[(/] | \\.\\. | … )\n          (?: \\^? [+\\-−] )?\n(?:\n    (?: \\d+ (?: [\\_\\d]+ \\d )? )\n    (?: \\.  \\d+ (?: [\\_\\d]+ \\d )? )?\n)\n(?:  e  (?:-|−)? \\d+ (?: [\\_\\d]+ \\d )? )?",
+			"name": "constant.numeric.raku"
+		  },
+		  {
+			"match": "(?x)\n          (?<= ^ | [×÷*=,:;^\\s{\\[(/] | \\.\\. )\n          (?: [+-−] )?\n(?:\n    (?: \\.  \\d+ (?: [\\_\\d]+ \\d )? )\n)\n(?:  e  (?:-|−)? \\d+ (?: [\\_\\d]+ \\d )? )?",
+			"name": "constant.numeric.raku"
+		  }
+		]
+	  },
+	  "p5_escaped_char": {
+		"patterns": [
+		  {
+			"match": "\\\\\\d+",
+			"name": "constant.character.escape.perl"
+		  },
+		  {
+			"match": "\\\\c[^\\s\\\\]",
+			"name": "constant.character.escape.perl"
+		  },
+		  {
+			"match": "\\\\g(?:\\{(?:\\w*|-\\d+)\\}|\\d+)",
+			"name": "constant.character.escape.perl"
+		  },
+		  {
+			"match": "\\\\k(?:\\{\\w*\\}|<\\w*>|'\\w*')",
+			"name": "constant.character.escape.perl"
+		  },
+		  {
+			"match": "\\\\N\\{[^\\}]*\\}",
+			"name": "constant.character.escape.perl"
+		  },
+		  {
+			"match": "\\\\o\\{\\d*\\}",
+			"name": "constant.character.escape.perl"
+		  },
+		  {
+			"match": "\\\\(?:p|P)(?:\\{\\w*\\}|P)",
+			"name": "constant.character.escape.perl"
+		  },
+		  {
+			"match": "\\\\x(?:[0-9a-zA-Z]{2}|\\{\\w*\\})?",
+			"name": "constant.character.escape.perl"
+		  },
+		  {
+			"match": "\\\\.",
+			"name": "constant.character.escape.perl"
+		  }
+		]
+	  },
+	  "p5_regex": {
+		"patterns": [
+		  {
+			"begin": "(?x)(?<![\\w\\/])(m|rx) \\s*((?:\\s*:\\w+)*)?(:P5)((?:\\s*:\\w+)*)?\\s* (\\{)",
+			"beginCaptures": {
+			  "1": {
+				"name": "string.regexp.construct.raku"
+			  },
+			  "2": {
+				"name": "entity.name.section.adverb.regexp.raku"
+			  },
+			  "3": {
+				"name": "entity.name.section.p5.adverb.regexp.raku"
+			  },
+			  "4": {
+				"name": "entity.name.section.adverb.regexp.raku"
+			  },
+			  "5": {
+				"name": "punctuation.definition.regexp.raku"
+			  }
+			},
+			"contentName": "string.regexp.p5.raku",
+			"end": "(?<!\\\\)(\\})([gmixXsuUAJ]+)?",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.definition.regexp.raku"
+			  },
+			  "2": {
+				"name": "invalid.illegal.p5.regexp.modifier.raku"
+			  }
+			},
+			"patterns": [
+			  {
+				"include": "#p5_escaped_char"
+			  },
+			  {
+				"include": "source.quoting.raku#q_brace_string_content"
+			  }
+			]
+		  },
+		  {
+			"begin": "(?x)(?<![\\w\\/])(m|rx) \\s*((?:\\s*:\\w+)*)?(:P5)((?:\\s*:\\w+)*)?\\s* (\\[)",
+			"beginCaptures": {
+			  "1": {
+				"name": "string.regexp.construct.raku"
+			  },
+			  "2": {
+				"name": "entity.name.section.adverb.regexp.raku"
+			  },
+			  "3": {
+				"name": "entity.name.section.p5.adverb.regexp.raku"
+			  },
+			  "4": {
+				"name": "entity.name.section.adverb.regexp.raku"
+			  },
+			  "5": {
+				"name": "punctuation.definition.regexp.raku"
+			  }
+			},
+			"contentName": "string.regexp.p5.raku",
+			"end": "(?<!\\\\)(\\])([gmixXsuUAJ]+)?",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.definition.regexp.raku"
+			  },
+			  "2": {
+				"name": "invalid.illegal.p5.regexp.modifier.raku"
+			  }
+			},
+			"patterns": [
+			  {
+				"include": "#p5_escaped_char"
+			  },
+			  {
+				"include": "source.quoting.raku#q_bracket_string_content"
+			  }
+			]
+		  },
+		  {
+			"begin": "(?x)(?<![\\w\\/])(m|rx) \\s*((?:\\s*:\\w+)*)?(:P5)((?:\\s*:\\w+)*)?\\s* (\\/)",
+			"beginCaptures": {
+			  "1": {
+				"name": "string.regexp.construct.raku"
+			  },
+			  "2": {
+				"name": "entity.name.section.adverb.regexp.raku"
+			  },
+			  "3": {
+				"name": "entity.name.section.p5.adverb.regexp.raku"
+			  },
+			  "4": {
+				"name": "entity.name.section.adverb.regexp.raku"
+			  },
+			  "5": {
+				"name": "punctuation.definition.regexp.raku"
+			  }
+			},
+			"contentName": "string.regexp.p5.raku",
+			"end": "(?<!\\\\)(\\/)([gmixXsuUAJ]+)?",
+			"endCaptures": {
+			  "1": {
+				"name": "punctuation.definition.regexp.raku"
+			  },
+			  "2": {
+				"name": "invalid.illegal.p5.regexp.modifier.raku"
+			  }
+			},
+			"patterns": [
+			  {
+				"include": "#p5_escaped_char"
+			  },
+			  {
+				"include": "source.quoting.raku#q_slash_string_content"
+			  }
+			]
+		  }
+		]
+	  },
+	  "q_right_double_right_double_string_content": {
+		"begin": "”",
+		"end": "”",
+		"patterns": [
+		  {
+			"include": "#q_right_double_right_double_string_content"
+		  }
+		]
+	  },
+	  "regexp-variables": {
+		"patterns": [
+		  {
+			"begin": "\\$(?=\\<)",
+			"beginCaptures": {
+			  "0": {
+				"name": "variable.other.identifier.sigil.regexp.perl6"
+			  }
+			},
+			"end": "(?![\\w\\<\\>])",
+			"name": "meta.match.variable.raku",
+			"patterns": [
+			  {
+				"captures": {
+				  "1": {
+					"name": "support.class.match.name.delimiter.regexp.raku"
+				  },
+				  "2": {
+					"name": "variable.other.identifier.regexp.perl6"
+				  },
+				  "3": {
+					"name": "support.class.match.name.delimiter.regexp.raku"
+				  }
+				},
+				"match": "(\\<)([\\w\\-]+)(\\>)"
 			  }
 			]
 		  }
@@ -1992,641 +2753,11 @@
 		  }
 		]
 	  },
-	  "comment-block-syntax": {
-		"patterns": [
-		  {
-			"include": "#comment-block-delimited"
-		  },
-		  {
-			"include": "#comment-block-abbreviated"
-		  },
-		  {
-			"begin": "(?x) (U) (<<<)",
-			"beginCaptures": {
-			  "1": {
-				"name": "support.function.pod.code.raku"
-			  },
-			  "2": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"end": "(?x) (>>>)",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"contentName": "markup.underline.raku",
-			"name": "meta.pod.c.raku",
-			"patterns": [
-			  {
-				"include": "#comment-block-syntax"
-			  },
-			  {
-				"include": "source.quoting.raku#q_triple_angle_string_content"
-			  }
-			]
-		  },
-		  {
-			"begin": "(?x) (I) (<<<)",
-			"beginCaptures": {
-			  "1": {
-				"name": "support.function.pod.code.raku"
-			  },
-			  "2": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"end": "(?x) (>>>)",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"contentName": "markup.italic.raku",
-			"name": "meta.pod.c.raku",
-			"patterns": [
-			  {
-				"include": "#comment-block-syntax"
-			  },
-			  {
-				"include": "source.quoting.raku#q_triple_angle_string_content"
-			  }
-			]
-		  },
-		  {
-			"begin": "(?x) (B) (<<<)",
-			"beginCaptures": {
-			  "1": {
-				"name": "support.function.pod.code.raku"
-			  },
-			  "2": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"end": "(?x) (>>>)",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"contentName": "markup.bold.raku",
-			"name": "meta.pod.c.raku",
-			"patterns": [
-			  {
-				"include": "#comment-block-syntax"
-			  },
-			  {
-				"include": "source.quoting.raku#q_triple_angle_string_content"
-			  }
-			]
-		  },
-		  {
-			"begin": "(?x) ([A-Z]) (<<<)",
-			"beginCaptures": {
-			  "1": {
-				"name": "support.function.pod.code.raku"
-			  },
-			  "2": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"end": "(?x) (>>>)",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"contentName": "markup.raw.code.raku",
-			"name": "meta.pod.c.raku",
-			"patterns": [
-			  {
-				"include": "#comment-block-syntax"
-			  },
-			  {
-				"include": "source.quoting.raku#q_triple_angle_string_content"
-			  }
-			]
-		  },
-		  {
-			"begin": "(?x) (U) (<<)",
-			"beginCaptures": {
-			  "1": {
-				"name": "support.function.pod.code.raku"
-			  },
-			  "2": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"end": "(?x) (>>)",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"contentName": "markup.underline.raku",
-			"name": "meta.pod.c.raku",
-			"patterns": [
-			  {
-				"include": "#comment-block-syntax"
-			  },
-			  {
-				"include": "source.quoting.raku#q_double_angle_string_content"
-			  }
-			]
-		  },
-		  {
-			"begin": "(?x) (I) (<<)",
-			"beginCaptures": {
-			  "1": {
-				"name": "support.function.pod.code.raku"
-			  },
-			  "2": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"end": "(?x) (>>)",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"contentName": "markup.italic.raku",
-			"name": "meta.pod.c.raku",
-			"patterns": [
-			  {
-				"include": "#comment-block-syntax"
-			  },
-			  {
-				"include": "source.quoting.raku#q_double_angle_string_content"
-			  }
-			]
-		  },
-		  {
-			"begin": "(?x) (B) (<<)",
-			"beginCaptures": {
-			  "1": {
-				"name": "support.function.pod.code.raku"
-			  },
-			  "2": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"end": "(?x) (>>)",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"contentName": "markup.bold.raku",
-			"name": "meta.pod.c.raku",
-			"patterns": [
-			  {
-				"include": "#comment-block-syntax"
-			  },
-			  {
-				"include": "source.quoting.raku#q_double_angle_string_content"
-			  }
-			]
-		  },
-		  {
-			"begin": "(?x) ([A-Z]) (<<)",
-			"beginCaptures": {
-			  "1": {
-				"name": "support.function.pod.code.raku"
-			  },
-			  "2": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"end": "(?x) (>>)",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"contentName": "markup.raw.code.raku",
-			"name": "meta.pod.c.raku",
-			"patterns": [
-			  {
-				"include": "#comment-block-syntax"
-			  },
-			  {
-				"include": "source.quoting.raku#q_double_angle_string_content"
-			  }
-			]
-		  },
-		  {
-			"begin": "(?x) (U) (<)",
-			"beginCaptures": {
-			  "1": {
-				"name": "support.function.pod.code.raku"
-			  },
-			  "2": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"end": "(?x) (>)",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"contentName": "markup.underline.raku",
-			"name": "meta.pod.c.raku",
-			"patterns": [
-			  {
-				"include": "#comment-block-syntax"
-			  },
-			  {
-				"include": "source.quoting.raku#q_angle_string_content"
-			  }
-			]
-		  },
-		  {
-			"begin": "(?x) (I) (<)",
-			"beginCaptures": {
-			  "1": {
-				"name": "support.function.pod.code.raku"
-			  },
-			  "2": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"end": "(?x) (>)",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"contentName": "markup.italic.raku",
-			"name": "meta.pod.c.raku",
-			"patterns": [
-			  {
-				"include": "#comment-block-syntax"
-			  },
-			  {
-				"include": "source.quoting.raku#q_angle_string_content"
-			  }
-			]
-		  },
-		  {
-			"begin": "(?x) (B) (<)",
-			"beginCaptures": {
-			  "1": {
-				"name": "support.function.pod.code.raku"
-			  },
-			  "2": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"end": "(?x) (>)",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"contentName": "markup.bold.raku",
-			"name": "meta.pod.c.raku",
-			"patterns": [
-			  {
-				"include": "#comment-block-syntax"
-			  },
-			  {
-				"include": "source.quoting.raku#q_angle_string_content"
-			  }
-			]
-		  },
-		  {
-			"begin": "(?x) ([A-Z]) (<)",
-			"beginCaptures": {
-			  "1": {
-				"name": "support.function.pod.code.raku"
-			  },
-			  "2": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"end": "(?x) (>)",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"contentName": "markup.raw.code.raku",
-			"name": "meta.pod.c.raku",
-			"patterns": [
-			  {
-				"include": "#comment-block-syntax"
-			  },
-			  {
-				"include": "source.quoting.raku#q_angle_string_content"
-			  }
-			]
-		  },
-		  {
-			"begin": "(?x) (U) («)",
-			"beginCaptures": {
-			  "1": {
-				"name": "support.function.pod.code.raku"
-			  },
-			  "2": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"end": "(?x) (»)",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"contentName": "markup.underline.raku",
-			"name": "meta.pod.c.raku",
-			"patterns": [
-			  {
-				"include": "#comment-block-syntax"
-			  },
-			  {
-				"include": "source.quoting.raku#q_chevron_string_content"
-			  }
-			]
-		  },
-		  {
-			"begin": "(?x) (I) («)",
-			"beginCaptures": {
-			  "1": {
-				"name": "support.function.pod.code.raku"
-			  },
-			  "2": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"end": "(?x) (»)",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"contentName": "markup.italic.raku",
-			"name": "meta.pod.c.raku",
-			"patterns": [
-			  {
-				"include": "#comment-block-syntax"
-			  },
-			  {
-				"include": "source.quoting.raku#q_chevron_string_content"
-			  }
-			]
-		  },
-		  {
-			"begin": "(?x) (B) («)",
-			"beginCaptures": {
-			  "1": {
-				"name": "support.function.pod.code.raku"
-			  },
-			  "2": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"end": "(?x) (»)",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"contentName": "markup.bold.raku",
-			"name": "meta.pod.c.raku",
-			"patterns": [
-			  {
-				"include": "#comment-block-syntax"
-			  },
-			  {
-				"include": "source.quoting.raku#q_chevron_string_content"
-			  }
-			]
-		  },
-		  {
-			"begin": "(?x) ([A-Z]) («)",
-			"beginCaptures": {
-			  "1": {
-				"name": "support.function.pod.code.raku"
-			  },
-			  "2": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"end": "(?x) (»)",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.section.embedded.pod.code.raku"
-			  }
-			},
-			"contentName": "markup.raw.code.raku",
-			"name": "meta.pod.c.raku",
-			"patterns": [
-			  {
-				"include": "#comment-block-syntax"
-			  },
-			  {
-				"include": "source.quoting.raku#q_chevron_string_content"
-			  }
-			]
-		  }
-		]
-	  },
-	  "p5_regex": {
-		"patterns": [
-		  {
-			"begin": "(?x)(?<![\\w\\/])(m|rx) \\s*((?:\\s*:\\w+)*)?(:P5)((?:\\s*:\\w+)*)?\\s* (\\{)",
-			"beginCaptures": {
-			  "1": {
-				"name": "string.regexp.construct.raku"
-			  },
-			  "2": {
-				"name": "entity.name.section.adverb.regexp.raku"
-			  },
-			  "3": {
-				"name": "entity.name.section.p5.adverb.regexp.raku"
-			  },
-			  "4": {
-				"name": "entity.name.section.adverb.regexp.raku"
-			  },
-			  "5": {
-				"name": "punctuation.definition.regexp.raku"
-			  }
-			},
-			"end": "(?<!\\\\)(\\})([gmixXsuUAJ]+)?",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.definition.regexp.raku"
-			  },
-			  "2": {
-				"name": "invalid.illegal.p5.regexp.modifier.raku"
-			  }
-			},
-			"contentName": "string.regexp.p5.raku",
-			"patterns": [
-			  {
-				"include": "#p5_escaped_char"
-			  },
-			  {
-				"include": "source.quoting.raku#q_brace_string_content"
-			  }
-			]
-		  },
-		  {
-			"begin": "(?x)(?<![\\w\\/])(m|rx) \\s*((?:\\s*:\\w+)*)?(:P5)((?:\\s*:\\w+)*)?\\s* (\\[)",
-			"beginCaptures": {
-			  "1": {
-				"name": "string.regexp.construct.raku"
-			  },
-			  "2": {
-				"name": "entity.name.section.adverb.regexp.raku"
-			  },
-			  "3": {
-				"name": "entity.name.section.p5.adverb.regexp.raku"
-			  },
-			  "4": {
-				"name": "entity.name.section.adverb.regexp.raku"
-			  },
-			  "5": {
-				"name": "punctuation.definition.regexp.raku"
-			  }
-			},
-			"end": "(?<!\\\\)(\\])([gmixXsuUAJ]+)?",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.definition.regexp.raku"
-			  },
-			  "2": {
-				"name": "invalid.illegal.p5.regexp.modifier.raku"
-			  }
-			},
-			"contentName": "string.regexp.p5.raku",
-			"patterns": [
-			  {
-				"include": "#p5_escaped_char"
-			  },
-			  {
-				"include": "source.quoting.raku#q_bracket_string_content"
-			  }
-			]
-		  },
-		  {
-			"begin": "(?x)(?<![\\w\\/])(m|rx) \\s*((?:\\s*:\\w+)*)?(:P5)((?:\\s*:\\w+)*)?\\s* (\\/)",
-			"beginCaptures": {
-			  "1": {
-				"name": "string.regexp.construct.raku"
-			  },
-			  "2": {
-				"name": "entity.name.section.adverb.regexp.raku"
-			  },
-			  "3": {
-				"name": "entity.name.section.p5.adverb.regexp.raku"
-			  },
-			  "4": {
-				"name": "entity.name.section.adverb.regexp.raku"
-			  },
-			  "5": {
-				"name": "punctuation.definition.regexp.raku"
-			  }
-			},
-			"end": "(?<!\\\\)(\\/)([gmixXsuUAJ]+)?",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.definition.regexp.raku"
-			  },
-			  "2": {
-				"name": "invalid.illegal.p5.regexp.modifier.raku"
-			  }
-			},
-			"contentName": "string.regexp.p5.raku",
-			"patterns": [
-			  {
-				"include": "#p5_escaped_char"
-			  },
-			  {
-				"include": "source.quoting.raku#q_slash_string_content"
-			  }
-			]
-		  }
-		]
-	  },
-	  "p5_escaped_char": {
-		"patterns": [
-		  {
-			"match": "\\\\\\d+",
-			"name": "constant.character.escape.perl"
-		  },
-		  {
-			"match": "\\\\c[^\\s\\\\]",
-			"name": "constant.character.escape.perl"
-		  },
-		  {
-			"match": "\\\\g(?:\\{(?:\\w*|-\\d+)\\}|\\d+)",
-			"name": "constant.character.escape.perl"
-		  },
-		  {
-			"match": "\\\\k(?:\\{\\w*\\}|<\\w*>|'\\w*')",
-			"name": "constant.character.escape.perl"
-		  },
-		  {
-			"match": "\\\\N\\{[^\\}]*\\}",
-			"name": "constant.character.escape.perl"
-		  },
-		  {
-			"match": "\\\\o\\{\\d*\\}",
-			"name": "constant.character.escape.perl"
-		  },
-		  {
-			"match": "\\\\(?:p|P)(?:\\{\\w*\\}|P)",
-			"name": "constant.character.escape.perl"
-		  },
-		  {
-			"match": "\\\\x(?:[0-9a-zA-Z]{2}|\\{\\w*\\})?",
-			"name": "constant.character.escape.perl"
-		  },
-		  {
-			"match": "\\\\.",
-			"name": "constant.character.escape.perl"
-		  }
-		]
-	  },
 	  "special_variables": {
 		"patterns": [
 		  {
 			"match": "(?x) [\\$\\@](?=[\\s,;\\{\\[\\(])| (?<=[\\(\\,])\\s*%(?![\\w\\*\\!\\?\\.\\^:=~])| \\$_| \\$\\/| \\$\\!(?!\\w)| \\$\\d(?!\\w)",
 			"name": "keyword.other.special-method.raku"
-		  }
-		]
-	  },
-	  "regexp-variables": {
-		"patterns": [
-		  {
-			"begin": "\\$(?=\\<)",
-			"beginCaptures": {
-			  "0": {
-				"name": "variable.other.identifier.sigil.regexp.perl6"
-			  }
-			},
-			"end": "(?![\\w\\<\\>])",
-			"name": "meta.match.variable.raku",
-			"patterns": [
-			  {
-				"match": "(\\<)([\\w\\-]+)(\\>)",
-				"captures": {
-				  "1": {
-					"name": "support.class.match.name.delimiter.regexp.raku"
-				  },
-				  "2": {
-					"name": "variable.other.identifier.regexp.perl6"
-				  },
-				  "3": {
-					"name": "support.class.match.name.delimiter.regexp.raku"
-				  }
-				}
-			  }
-			]
 		  }
 		]
 	  },
@@ -2636,7 +2767,6 @@
 			"include": "#regexp-variables"
 		  },
 		  {
-			"match": "(?x)\n(\\$|@|%|&)\n(\\.|\\*|:|!|\\^|~|=|\\?)?\n(\n    (?:[\\p{Alpha}_])           # Must start with Alpha or underscore\n    (?:\n       [\\p{Digit}\\p{Alpha}_]  # have alphanum/underscore, or a ' or -\n    |                           # followed by an Alpha or underscore\n       [\\-'] [\\p{Alpha}_]\n    )*\n)",
 			"captures": {
 			  "1": {
 				"name": "variable.other.identifier.sigil.raku"
@@ -2648,144 +2778,11 @@
 				"name": "variable.other.identifier.raku"
 			  }
 			},
+			"match": "(?x)\n(\\$|@|%|&)\n(\\.|\\*|:|!|\\^|~|=|\\?)?\n(\n    (?:[\\p{L}\\p{M}_])           # Must start with Alpha or underscore\n    (?:\n       [\\p{Nd}\\p{L}\\p{M}_]  # have alphanum/underscore, or a ' or -\n    |                           # followed by an Alpha or underscore\n       [\\-'] [\\p{L}\\p{M}_]\n    )*\n)",
 			"name": "meta.variable.container.raku"
 		  }
 		]
-	  },
-	  "hex_escapes": {
-		"patterns": [
-		  {
-			"match": "(?x) (\\\\x) ( \\[ ) ( [\\dA-Fa-f]+ ) ( \\] )",
-			"captures": {
-			  "1": {
-				"name": "keyword.punctuation.hex.raku"
-			  },
-			  "2": {
-				"name": "keyword.operator.bracket.open.raku"
-			  },
-			  "3": {
-				"name": "routine.name.hex.raku"
-			  },
-			  "4": {
-				"name": "keyword.operator.bracket.close.raku"
-			  }
-			},
-			"name": "punctuation.hex.raku"
-		  }
-		]
-	  },
-	  "interpolation": {
-		"patterns": [
-		  {
-			"match": "(?x)\n(?<!\\\\)\n(\\$|@|%|&)\n(?!\\$)\n(\\.|\\*|:|!|\\^|~|=|\\?)?  # Twigils\n([\\p{Alpha}_])             # Must start with Alpha or underscore\n(\n   [\\p{Digit}\\p{Alpha}_]  # have alphanum/underscore, or a ' or -\n|                           # followed by an Alpha or underscore\n   [\\-'] [\\p{Alpha}_]\n)*\n( \\[ .* \\] )?             # postcircumfix [ ]\n## methods\n(?:\n  (?:\n    ( \\. )\n    (\n       [\\p{Alpha}]\n        (?:\n          [\\p{Digit}\\p{Alpha}_]  # have alphanum/underscore, or a ' or -\n        |                          # followed by an Alpha or underscore\n          [\\-'] [\\p{Alpha}_]\n        )*\n\n    )\n  )?\n  ( \\( .*?  \\) )\n)?",
-			"captures": {
-			  "1": {
-				"name": "variable.other.identifier.sigil.raku"
-			  },
-			  "2": {
-				"name": "support.class.twigil.interpolated.raku"
-			  },
-			  "5": {
-				"patterns": [
-				  {
-					"begin": "<",
-					"beginCaptures": {
-					  "0": {
-						"name": "keyword.operator.chevron.open.raku"
-					  }
-					},
-					"end": ">",
-					"endCaptures": {
-					  "0": {
-						"name": "keyword.operator.chevron.close.raku"
-					  }
-					}
-				  },
-				  {
-					"begin": "\\[",
-					"beginCaptures": {
-					  "0": {
-						"name": "keyword.operator.bracket.open.raku"
-					  }
-					},
-					"end": "\\]",
-					"endCaptures": {
-					  "0": {
-						"name": "keyword.operator.bracket.close.raku"
-					  }
-					},
-					"patterns": [
-					  {
-						"include": "$self"
-					  }
-					]
-				  }
-				]
-			  },
-			  "6": {
-				"name": "keyword.operator.dot.raku"
-			  },
-			  "7": {
-				"name": "support.function.raku"
-			  },
-			  "8": {
-				"begin": "(",
-				"beginCaptures": {
-				  "0": {
-					"name": "keyword.operator.paren.open.raku"
-				  }
-				},
-				"end": ")",
-				"endCaptures": {
-				  "0": {
-					"name": "keyword.operator.paren.close.raku"
-				  }
-				},
-				"patterns": [
-				  {
-					"include": "$self"
-				  }
-				]
-			  }
-			},
-			"name": "variable.other.identifier.interpolated.raku"
-		  },
-		  {
-			"include": "#hex_escapes"
-		  },
-		  {
-			"include": "#regexp-variables"
-		  },
-		  {
-			"begin": "(?x) (?<! m|rx|m:i|rx:i) (\\{)",
-			"beginCaptures": {
-			  "1": {
-				"name": "punctuation.section.embedded.begin.raku"
-			  }
-			},
-			"end": "(\\})",
-			"endCaptures": {
-			  "1": {
-				"name": "punctuation.section.embedded.end.raku"
-			  }
-			},
-			"patterns": [
-			  {
-				"include": "$self"
-			  }
-			],
-			"name": "meta.interpolation.raku"
-		  }
-		]
-	  },
-	  "q_right_double_right_double_string_content": {
-		"begin": "”",
-		"end": "”",
-		"patterns": [
-		  {
-			"include": "#q_right_double_right_double_string_content"
-		  }
-		]
 	  }
-	}
+	},
+	"scopeName": "source.raku"
   }
