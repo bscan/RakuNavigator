@@ -1305,11 +1305,10 @@
 			"begin": "\\{",
 			"captures": {
 			  "0": {
-				"name": "punctuation.definition.regex.named.raku"
+				"name": "punctuation.definition.rg.named.raku"
 			  }
 			},
 			"end": "(?=\\})",
-			"name": "meta.regexp.named.block.raku",
 			"patterns": [
 			  {
 				"include": "#interpolation"
