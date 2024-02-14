@@ -173,7 +173,7 @@ function packages(state: ParserState): boolean {
         // state.package_name = roleName; # Being cautious against changing the package name
         const endLine = SubEndLine(state);
         MakeElem(roleName, RakuSymbolKind.Grammar, "", state, endLine);
-    } else if ((match = state.stmt.match(/^module\s+((?:[\w\-]|::)+)/))) {
+    } else if ((match = state.stmt.match(/^(?:unit )?module\s+((?:[\w\-]|::)+)/))) {
         const roleName = match[1];
         console.log(`Matching module: ${roleName}`);
         state.package_name = roleName; // Being cautious against changing the package name

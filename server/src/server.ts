@@ -25,12 +25,12 @@ import {
 
 import Uri from 'vscode-uri';
 import { getDefinition, getAvailableMods } from "./navigation";
-import { NavigatorSettings, RakuDocument, ParseType } from "./types";
+import { NavigatorSettings, RakuDocument, ParseType, RakuElem } from "./types";
 import { rakucompile } from "./diagnostics";
 import { nLog } from './utils';
 import { getSymbols } from "./symbols";
 import { getHover } from "./hover";
-import { getCompletions } from './completion';
+import { getCompletions, getCompletionDoc } from './completion';
 import { parseDocument } from "./parser";
 
 var LRU = require("lru-cache");
@@ -64,7 +64,7 @@ connection.onInitialize((params: InitializeParams) => {
         capabilities: {
             textDocumentSync: TextDocumentSyncKind.Incremental,
             completionProvider: {
-                resolveProvider: false,
+                resolveProvider: true,
                 triggerCharacters: ['$','@','%','-', '>',':','.']
             },
             documentSymbolProvider: true, // Outline view and breadcrumbs
@@ -273,25 +273,25 @@ connection.onCompletion((params: TextDocumentPositionParams): CompletionList | u
 });
 
 
-// connection.onCompletionResolve(async (item: CompletionItem): Promise<CompletionItem> => {
+connection.onCompletionResolve(async (item: CompletionItem): Promise<CompletionItem> => {
 
-//     const rakuElem: RakuElem = item.data.rakuElem;
+    const rakuElem: RakuElem = item.data.rakuElem;
 
-//     let rakuDoc = navSymbols.get(item.data?.docUri);
-//     if (!rakuDoc) return item;
+    let rakuDoc = navSymbols.get(item.data?.docUri);
+    if (!rakuDoc) return item;
 
-//     let mods = availableMods.get("default");
-//     if (!mods) mods = new Map();
+    let mods = availableMods.get("default");
+    if (!mods) mods = new Map();
     
-//     const docs = await getCompletionDoc(rakuElem, rakuDoc, mods);
-//     if (docs?.match(/\w/)) {
-//         item.documentation = { kind: "markdown", value: docs };;
-//     }
-//     return item;
-// });
+    const docs = await getCompletionDoc(rakuElem, rakuDoc, mods);
+    if (docs?.match(/\w/)) {
+        item.documentation = { kind: "markdown", value: docs };;
+    }
+    return item;
+});
 
 
-connection.onHover(params => {
+connection.onHover(async (params) => {
     let document = documents.get(params.textDocument.uri);
     let rakuDoc = navSymbols.get(params.textDocument.uri);
     let mods = availableMods.get("default");
@@ -299,7 +299,7 @@ connection.onHover(params => {
 
     if(!document || !rakuDoc) return;
 
-    return getHover(params, rakuDoc, document, mods);
+    return await getHover(params, rakuDoc, document, mods);
 });
 
 connection.onDefinition(params => {

@@ -1,12 +1,10 @@
-import {
-    TextDocumentPositionParams,
-    Hover,
-} from 'vscode-languageserver/node';
+import { TextDocumentPositionParams, Hover, MarkupContent, MarkupKind } from "vscode-languageserver/node";
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { RakuDocument, RakuElem, RakuSymbolKind } from "./types";
 import { getSymbol, lookupSymbol } from "./utils";
+import { getDoc } from './docs';
 
-export function getHover(params: TextDocumentPositionParams, rakuDoc: RakuDocument, txtDoc: TextDocument, modMap: Map<string, string>): Hover | undefined {
+export async function getHover(params: TextDocumentPositionParams, rakuDoc: RakuDocument, txtDoc: TextDocument, modMap: Map<string, string>): Promise<Hover | undefined> {
 
     let position = params.position
     const symbol = getSymbol(position, txtDoc);
@@ -19,10 +17,26 @@ export function getHover(params: TextDocumentPositionParams, rakuDoc: RakuDocume
         elem = elems[0];
     }
 
-    let hoverStr = buildHoverDoc(symbol, elem);
-    if(!hoverStr) return; // Sometimes, there's nothing worth showing.
+    let title = buildHoverDoc(symbol, elem);
+    if(!title) return; // Sometimes, there's nothing worth showing.
 
-    const documentation = {contents: hoverStr};
+    let merged = title;
+
+
+    let docs = await getDoc(elem, rakuDoc, modMap);
+
+    if(docs){
+        if(!docs.startsWith("\n"))
+            docs = "\n" + docs; // Markdown requires two newlines to make one
+        merged += `\n${docs}`;
+    }
+    
+    const hoverContent: MarkupContent = {
+        kind: MarkupKind.Markdown,
+        value: merged
+    };
+    
+    const documentation: Hover = { contents: hoverContent };
 
     return documentation;
 }

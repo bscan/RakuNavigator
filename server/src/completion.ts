@@ -8,6 +8,7 @@ import {
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { RakuDocument, CompletionPrefix, RakuSymbolKind, completionElem, ElemSource, RakuElem} from "./types";
 import Uri from "vscode-uri";
+import { getDoc } from "./docs";
 
 
 export function getCompletions(params: TextDocumentPositionParams, rakuDoc: RakuDocument, txtDoc: TextDocument, modMap: Map<string, string>): CompletionItem[] {
@@ -45,6 +46,10 @@ export function getCompletions(params: TextDocumentPositionParams, rakuDoc: Raku
 
 }
 
+export async function getCompletionDoc(elem: RakuElem, perlDoc: RakuDocument, modMap: Map<string, string>): Promise<string | undefined> {
+    let docs = await getDoc(elem, perlDoc, modMap);
+    return docs;
+}
 
 // Similar to getSymbol for navigation, but don't "move right". 
 function getPrefix(text: string, position: number): CompletionPrefix {
