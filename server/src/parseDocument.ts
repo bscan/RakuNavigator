@@ -1,8 +1,9 @@
 
-import { RakuDocument, RakuElem, RakuSymbolKind} from "./types";
+import { ElemSource, RakuDocument, RakuElem, RakuSymbolKind} from "./types";
+import Uri from "vscode-uri";
 
 
-export async function buildNav(stdout: string): Promise<RakuDocument> {
+export async function buildNav(stdout: string, fileuri: string): Promise<RakuDocument> {
 
     stdout = stdout.replace(/\r/g, ""); // Windows 
 
@@ -10,7 +11,8 @@ export async function buildNav(stdout: string): Promise<RakuDocument> {
             elems: new Map(),
             canonicalElems: new Map(),
             imported: new Map(),
-            parents: new Map()
+            parents: new Map(),
+            uri: fileuri,
         };
 
     stdout.split("\n").forEach(Raku_elem => {
@@ -42,10 +44,11 @@ function parseElem(RakuTag: string, RakuDoc: RakuDocument): void {
     const newElem: RakuElem = {
         name: name,
         type: type as RakuSymbolKind,
-        details: details,
-        file: file,
+        uri: Uri.file(file).toString(),
         line: startLine,
         lineEnd: endLine,
+        source: ElemSource.symbolTable,
+        package: "",
     };
 
     addVal(RakuDoc.elems, name, newElem);

@@ -15,7 +15,6 @@ export interface NavigatorSettings {
 
 export interface CompilationResults {
     diags: Diagnostic[],
-    rakuDoc: RakuDocument,
     error: boolean
 }
 
@@ -24,20 +23,25 @@ export interface RakuDocument {
     canonicalElems: Map<string, RakuElem>;
     imported: Map<string, number>;
     parents: Map<string, string>;
+    uri: string;
 }
 
 
 export interface RakuElem {
     name: string,
     type: RakuSymbolKind;
-    details: string,
-    file: string;
     line: number;
     lineEnd: number;
+    signature?: string[];
+    source: ElemSource;
+    uri: string;
+    package: string;
 };
 
 export enum RakuSymbolKind {
     Class        = "a",
+    Module       = 'm',
+    Package      = 'p',
     Role         = "b",
     Grammar      = "g",
     Token        = "t",
@@ -46,11 +50,38 @@ export enum RakuSymbolKind {
     LocalSub     = "s", 
     LocalMethod  = "o", 
     LocalVar     = "v",
-    // Phaser       = "e",
+    PathedField  = "d",
+    Phaser       = "e",
+    LocalModule  = "l"
+}
+
+// Ensure TagKind and RakuSymbolKind have no overlap
+// These are things needing tagging, that aren't really symbols in the code
+export enum TagKind {
+    UseStatement  = 'u', 
 }
 
 export interface CompletionPrefix {
     symbol: string,
     charStart: number,
     charEnd: number,
+    stripPackage: boolean,
+}
+
+export interface completionElem { 
+    rakuElem: RakuElem;
+    docUri: string
+}
+
+export enum ElemSource {
+    symbolTable,
+    modHunter,
+    parser,
+    packageInference,
+}
+
+export enum ParseType {
+    outline,
+    selfNavigation,
+    refinement,
 }

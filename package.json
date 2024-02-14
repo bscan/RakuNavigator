@@ -50,7 +50,7 @@
       {
         "language": "raku",
         "scopeName": "source.raku",
-        "path": "./syntaxes/raku.tmLanguage.json"
+        "path": "./server/raku.tmLanguage.json"
       }
     ],
     "snippets": [
@@ -108,10 +108,14 @@
     "@types/node": "^12.12.0",
     "@typescript-eslint/eslint-plugin": "^4.23.0",
     "@typescript-eslint/parser": "^4.23.0",
+    "@types/webpack-env": "^1.16.0",
     "eslint": "^7.26.0",
     "mocha": "^8.3.2",
     "pkg": "^5.5.2",
-    "typescript": "^4.2.3"
+    "typescript": "^4.2.3",
+    "webpack": "^5.76.1",
+		"webpack-cli": "^4.7.0",
+    "path-browserify": "^1.0.1"
   },
   "bin": "server/out/server.js"
 }

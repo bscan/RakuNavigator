@@ -24,13 +24,14 @@ import {
 } from 'vscode-languageserver-protocol';
 
 import Uri from 'vscode-uri';
-import { getDefinition } from "./navigation";
-import { NavigatorSettings, RakuDocument } from "./types";
+import { getDefinition, getAvailableMods } from "./navigation";
+import { NavigatorSettings, RakuDocument, ParseType } from "./types";
 import { rakucompile } from "./diagnostics";
 import { nLog } from './utils';
 import { getSymbols } from "./symbols";
 import { getHover } from "./hover";
 import { getCompletions } from './completion';
+import { parseDocument } from "./parser";
 
 var LRU = require("lru-cache");
 
@@ -113,6 +114,36 @@ const documentDiags: Map<string, Diagnostic[]> = new Map();
 
 const timers: Map<string, NodeJS.Timeout> = new Map();
 
+// Keep track of modules available for import. Building this is a slow operations and varies based on workspace settings, not documents
+const availableMods: Map<string, Map<string, string>> = new Map();
+let modCacheBuilt: boolean = false;
+
+async function rebuildModCache() {
+    const allDocs = documents.all();
+    if (allDocs.length > 0) {
+        modCacheBuilt = true;
+        dispatchForMods(allDocs[allDocs.length - 1]); // Rebuild with recent file
+    }
+    return;
+}
+
+async function buildModCache(textDocument: TextDocument) {
+    if (!modCacheBuilt) {
+        modCacheBuilt = true; // Set true first to prevent other files from building concurrently.
+        dispatchForMods(textDocument);
+    }
+    return;
+}
+
+async function dispatchForMods(textDocument: TextDocument) {
+    // BIG TODO: Resolution of workspace settings? How to do? Maybe build a hash of all include paths.
+    const settings = await getDocumentSettings(textDocument.uri);
+    const workspaceFolders = await getWorkspaceFoldersSafe();
+    const newMods = await getAvailableMods(workspaceFolders, settings);
+    availableMods.set("default", newMods);
+    return;
+}
+
 
 async function getWorkspaceFoldersSafe (): Promise<WorkspaceFolder[]> {
     try {
@@ -157,6 +188,7 @@ documents.onDidClose(e => {
 
 documents.onDidOpen(change => {
     validateRakuDocument(change.document);
+    buildModCache(change.document);
 });
 
 
@@ -182,16 +214,15 @@ async function validateRakuDocument(textDocument: TextDocument): Promise<void> {
     const start = Date.now();
 
     const workspaceFolders = await getWorkspaceFoldersSafe(); 
-    const pCompile = rakucompile(textDocument, workspaceFolders, settings); // Start compilation
 
-    let rakuOut = await pCompile;
+    const rakuDoc = await parseDocument(textDocument, ParseType.selfNavigation);
+    navSymbols.set(textDocument.uri, rakuDoc);
+
+    let rakuOut = await rakucompile(textDocument, workspaceFolders, settings); // Start compilation
+
     nLog("Compilation Time: " + (Date.now() - start)/1000 + " seconds", settings);
     if(!rakuOut) return;
     sendDiags({ uri: textDocument.uri, diagnostics: rakuOut.diags });
-
-    if(!rakuOut.error){
-        navSymbols.set(textDocument.uri, rakuOut.rakuDoc);
-    }
 
     return;
 }
@@ -206,26 +237,35 @@ function sendDiags(params: PublishDiagnosticsParams): void{
 }
 
 
-connection.onDidChangeConfiguration(change => {
+connection.onDidChangeConfiguration(async (change) => {
     if (hasConfigurationCapability) {
         // Reset all cached document settings
         documentSettings.clear();
     } else {
         globalSettings = { ...defaultSettings, ...change?.settings?.raku };
     }
-    // Pretty rare occurence, and can slow things down. Revalidate all open text documents
-    // documents.all().forEach(validateRakuDocument);
+
+    if (change?.settings?.raku) {
+        await rebuildModCache();
+        for (const doc of documents.all()) {
+            // sequential changes
+            await validateRakuDocument(doc);
+        }
+    }
+
 });
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion((params: TextDocumentPositionParams): CompletionList | undefined => {
     let document = documents.get(params.textDocument.uri);
     let rakuDoc = navSymbols.get(params.textDocument.uri);
+    let mods = availableMods.get("default");
 
     if(!document) return;
     if(!rakuDoc) return; // navSymbols is an LRU cache, so the navigation elements will be missing if you open lots of files
+    if (!mods) mods = new Map();
 
-    const completions: CompletionItem[] = getCompletions(params, rakuDoc, document);
+    const completions: CompletionItem[] = getCompletions(params, rakuDoc, document, mods);
     return {
         items: completions,
         isIncomplete: false,
@@ -233,28 +273,64 @@ connection.onCompletion((params: TextDocumentPositionParams): CompletionList | u
 });
 
 
+// connection.onCompletionResolve(async (item: CompletionItem): Promise<CompletionItem> => {
+
+//     const rakuElem: RakuElem = item.data.rakuElem;
+
+//     let rakuDoc = navSymbols.get(item.data?.docUri);
+//     if (!rakuDoc) return item;
+
+//     let mods = availableMods.get("default");
+//     if (!mods) mods = new Map();
+    
+//     const docs = await getCompletionDoc(rakuElem, rakuDoc, mods);
+//     if (docs?.match(/\w/)) {
+//         item.documentation = { kind: "markdown", value: docs };;
+//     }
+//     return item;
+// });
+
+
 connection.onHover(params => {
     let document = documents.get(params.textDocument.uri);
     let rakuDoc = navSymbols.get(params.textDocument.uri);
-    
+    let mods = availableMods.get("default");
+    if (!mods) mods = new Map();
+
     if(!document || !rakuDoc) return;
 
-    return getHover(params, rakuDoc, document);
+    return getHover(params, rakuDoc, document, mods);
 });
 
 connection.onDefinition(params => {
     let document = documents.get(params.textDocument.uri);
     let rakuDoc = navSymbols.get(params.textDocument.uri);
+    let mods = availableMods.get("default");
+    if (!mods) mods = new Map();
     if(!document) return;
     if(!rakuDoc) return; // navSymbols is an LRU cache, so the navigation elements will be missing if you open lots of files
-    let locOut: Location | Location[] | undefined = getDefinition(params, rakuDoc, document);
+    let locOut: Location | Location[] | undefined = getDefinition(params, rakuDoc, document, mods);
     return locOut;
 });
 
 
-connection.onDocumentSymbol(params => {
-    return getSymbols(navSymbols, params.textDocument.uri);
+connection.onDocumentSymbol(async (params) => {
+    let document = documents.get(params.textDocument.uri);
+    // We might  need to async wait for the document to be processed, but I suspect the order is fine
+    if (!document) return;
+    return getSymbols(document, params.textDocument.uri);
 });
+
+// connection.onSignatureHelp(async (params) => {
+//     let document = documents.get(params.textDocument.uri);
+//     let rakuDoc = navSymbols.get(params.textDocument.uri);
+//     let mods = availableMods.get("default");
+//     if (!mods) mods = new Map();
+//     if (!document || !rakuDoc) return;
+//     const signature = await getSignature(params, rakuDoc, document, mods);
+//     return signature;
+// });
+
 
 process.on('unhandledRejection', function(reason, p){
     console.log("Caught an unhandled Rejection at: Promise ", p, " reason: ", reason);

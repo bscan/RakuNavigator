@@ -23,12 +23,10 @@ Install the vscode extension from: https://marketplace.visualstudio.com/items?it
 ## Other recommended settings
 I also recommend the following vscode settings when using Raku.
 The word separators are important for highlighting function names that have a hyphen in them, and for variables that include sigils.
-The bracketPairColorization unfortunately exposes some issues in the Raku syntax highlighting. I recommended enabling it only for development of the syntax highlighting extension itself.
 
 <pre>
 "[raku]": {
 	"editor.wordSeparators": "`~!#^&*()=+[{]}\\|;:'\",.<>/?",
-	"editor.bracketPairColorization.enabled": false
 },
 </pre>
 

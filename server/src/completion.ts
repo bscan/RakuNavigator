@@ -6,10 +6,11 @@ import {
     MarkupContent
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { RakuDocument, RakuElem, CompletionPrefix, RakuSymbolKind } from "./types";
+import { RakuDocument, CompletionPrefix, RakuSymbolKind, completionElem, ElemSource, RakuElem} from "./types";
+import Uri from "vscode-uri";
 
 
-export function getCompletions(params: TextDocumentPositionParams, rakuDoc: RakuDocument, txtDoc: TextDocument): CompletionItem[] {
+export function getCompletions(params: TextDocumentPositionParams, rakuDoc: RakuDocument, txtDoc: TextDocument, modMap: Map<string, string>): CompletionItem[] {
 
     let position = params.position
     const start = { line: position.line, character: 0 };
@@ -18,17 +19,29 @@ export function getCompletions(params: TextDocumentPositionParams, rakuDoc: Raku
 
     const index = txtDoc.offsetAt(position) - txtDoc.offsetAt(start);
 
-    const prefix = getPrefix(text, index);
+    const imPrefix = getImportPrefix(text, index);
+    if (imPrefix) {
+        const replace: Range = {
+            start: { line: position.line, character: imPrefix.charStart },
+            end: { line: position.line, character: imPrefix.charEnd },
+        };
 
-    if(!prefix.symbol) return [];
+        const matches = getImportMatches(modMap, imPrefix.symbol, replace, rakuDoc);
+        return matches;
+    } else {
 
-    const replace: Range = {
-            start: { line: position.line, character: prefix.charStart },
-            end: { line: position.line, character: prefix.charEnd }  
-    };
+        const prefix = getPrefix(text, index);
 
-    const matches = getMatches(rakuDoc, prefix.symbol, replace);
-    return matches;
+        if(!prefix.symbol) return [];
+
+        const replace: Range = {
+                start: { line: position.line, character: prefix.charStart },
+                end: { line: position.line, character: prefix.charEnd }  
+        };
+
+        const matches = getMatches(rakuDoc, prefix.symbol, replace);
+        return matches;
+    }
 
 }
 
@@ -36,7 +49,7 @@ export function getCompletions(params: TextDocumentPositionParams, rakuDoc: Raku
 // Similar to getSymbol for navigation, but don't "move right". 
 function getPrefix(text: string, position: number): CompletionPrefix {
 
-    const leftAllow  = (c: string) => /[\w\:\>\-]/.exec(c);
+    const leftAllow  = (c: string) => /[\.\w\:\>\-]/.exec(c);
 
     let left = position - 1;
 
@@ -47,13 +60,61 @@ function getPrefix(text: string, position: number): CompletionPrefix {
 
     let symbol = text.substring(left, position);
     const lChar  = left > 0 ? text[left-1] : "";
+    const llChar  = left > 1 ? text[left-2] : "";
+
 
     if(lChar === '$' || lChar === '@' || lChar === '%'){
         symbol = lChar + symbol;
         left -= 1;
+    } else if(lChar === '.' && ( llChar === '$' || llChar === '@' || llChar === '%')) {
+        symbol = llChar + lChar + symbol;
+        left -= 2;
     }
+    console.log("Symbol: " + symbol + " Left: " + left + " Position: " + position);
+    return {symbol: symbol, charStart: left, charEnd: position, stripPackage: false};
+}
 
-    return {symbol: symbol, charStart: left, charEnd: position};
+
+// First we check if it's an import statement, which is a special type of autocomplete with far more options
+function getImportPrefix(text: string, position: number): CompletionPrefix | undefined {
+    text = text.substring(0, position);
+
+    let partialImport = /^\s*(?:use|require)\s+([\w:]+)$/.exec(text);
+    if (!partialImport) return;
+    const symbol = partialImport[1];
+
+    return { symbol: symbol, charStart: position - symbol.length, charEnd: position, stripPackage: false };
+}
+
+function getImportMatches(modMap: Map<string, string>, symbol: string, replace: Range, rakuDoc: RakuDocument): CompletionItem[] {
+    const matches: CompletionItem[] = [];
+    const mods = Array.from(modMap.keys());
+
+    const lcSymbol = symbol.toLowerCase();
+    modMap.forEach((modFile, mod) => {
+        if (mod.toLowerCase().startsWith(lcSymbol)) {
+
+            const modUri = Uri.parse(modFile).toString();
+            const modElem: RakuElem = {
+                name: symbol,
+                type: RakuSymbolKind.Module,
+                uri: modUri,
+                package: symbol,
+                line: 0,
+                lineEnd: 0,
+                source: ElemSource.modHunter,
+            };
+            const newElem: completionElem = {rakuElem: modElem, docUri: rakuDoc.uri}
+
+            matches.push({
+                label: mod,
+                textEdit: { newText: mod, range: replace },
+                kind: CompletionItemKind.Module,
+                data: newElem
+            });
+        }
+    });
+    return matches;
 }
 
 
@@ -67,7 +128,7 @@ function getMatches(rakuDoc: RakuDocument, symbol: string,  replace: Range): Com
         let element = elements[0]; // Get the canonical (typed) element, otherwise just grab the first one.
 
         if ( elemName.startsWith(symbol) ){
-            matches = matches.concat(buildMatches(elemName, element, replace));
+            matches = matches.concat(buildMatches(elemName, element, replace, false, rakuDoc));
         }
     });
 
@@ -76,7 +137,7 @@ function getMatches(rakuDoc: RakuDocument, symbol: string,  replace: Range): Com
 }
 
 
-function buildMatches(lookupName: string, elem: RakuElem, range: Range): CompletionItem[] {
+function buildMatches(lookupName: string, elem: RakuElem, range: Range, stripPackage: boolean, rakuDoc: RakuDocument): CompletionItem[] {
 
     let kind: CompletionItemKind;
     let detail: string | undefined = undefined;
@@ -108,6 +169,8 @@ function buildMatches(lookupName: string, elem: RakuElem, range: Range): Complet
 
     let matches: CompletionItem[] = [];
 
+    const newElem: completionElem = {rakuElem: elem, docUri: rakuDoc.uri}
+
     labelsToBuild.forEach(label => {
         matches.push({
             label: label,
@@ -115,6 +178,7 @@ function buildMatches(lookupName: string, elem: RakuElem, range: Range): Complet
             kind: kind,
             detail: detail,
             documentation: documentation,
+            data: newElem,
         });
     });
 

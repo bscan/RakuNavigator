@@ -3,10 +3,10 @@ import {
     Hover,
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { RakuDocument, RakuElem } from "./types";
+import { RakuDocument, RakuElem, RakuSymbolKind } from "./types";
 import { getSymbol, lookupSymbol } from "./utils";
 
-export function getHover(params: TextDocumentPositionParams, rakuDoc: RakuDocument, txtDoc: TextDocument): Hover | undefined {
+export function getHover(params: TextDocumentPositionParams, rakuDoc: RakuDocument, txtDoc: TextDocument, modMap: Map<string, string>): Hover | undefined {
 
     let position = params.position
     const symbol = getSymbol(position, txtDoc);
@@ -14,7 +14,7 @@ export function getHover(params: TextDocumentPositionParams, rakuDoc: RakuDocume
     let elem = rakuDoc.canonicalElems.get(symbol);
 
     if(!elem){
-        const elems = lookupSymbol(rakuDoc, symbol, position.line);
+        const elems = lookupSymbol(rakuDoc, modMap, symbol, position.line);
         if(elems.length != 1) return; // Nothing or too many things.
         elem = elems[0];
     }
@@ -48,7 +48,12 @@ function buildHoverDoc(symbol: string, elem: RakuElem){
         desc = `(token) ${symbol}`;
     } else if (elem.type == 'r'){
         desc = `(rule) ${symbol}`;
-    } else {
+    } else if (elem.type == RakuSymbolKind.Module || elem.type == RakuSymbolKind.LocalModule){
+        desc = `(module) ${symbol}`;
+    }  else if (elem.type == RakuSymbolKind.Package){
+        desc = `(package) ${symbol}`;
+    } 
+    else {
         // We should never get here
         desc = `Unknown: ${symbol}`;
     }

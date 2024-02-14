@@ -8,7 +8,8 @@ import {
     TextDocument,
     Position
 } from 'vscode-languageserver-textdocument';
-import { NavigatorSettings, RakuDocument, RakuElem, RakuSymbolKind } from "./types";
+import { NavigatorSettings, RakuDocument, RakuElem, RakuSymbolKind, ElemSource } from "./types";
+import { promises } from "fs";
 
 export const async_execFile = promisify(execFile);
 
@@ -30,6 +31,8 @@ export function getIncPaths(workspaceFolders: WorkspaceFolder[] | null, settings
             includePaths = includePaths.concat(["-I", path]);
         }
     });
+
+    // Should I include "lib" by default?
     return includePaths;
 }
 
@@ -83,6 +86,8 @@ export function getSymbol(position: Position, txtDoc: TextDocument) {
         symbol = lChar + symbol;   // @foo, %foo -> @foo, %foo
     }else if(lChar === '{' && rChar === '}' && ["$", "%", "@"].includes(llChar)){
         symbol = llChar + symbol;  // ${foo} -> $foo
+    }else if(lChar === '.' && ["$", "%", "@"].includes(llChar)){
+        symbol = llChar + lChar + symbol;  // $.documents
     }
 
     return symbol;
@@ -90,7 +95,7 @@ export function getSymbol(position: Position, txtDoc: TextDocument) {
 
 
 
-export function lookupSymbol(rakuDoc: RakuDocument, symbol: string, line: number): RakuElem[] {
+export function lookupSymbol(rakuDoc: RakuDocument, modMap: Map<string, string>, symbol: string, line: number): RakuElem[] {
 
     let found = rakuDoc.elems.get(symbol);
     if(found?.length){
@@ -98,6 +103,47 @@ export function lookupSymbol(rakuDoc: RakuDocument, symbol: string, line: number
         const best = findRecent(found, line);
         return [best];
     }
+
+    let foundMod = modMap.get(symbol);
+    if (foundMod) {
+        // Ideally we would've found the module in the rakuDoc, but perhaps it was "required" instead of "use'd"
+        const modUri = Uri.parse(foundMod).toString();
+        const modElem: RakuElem = {
+            name: symbol,
+            type: RakuSymbolKind.Module,
+            uri: modUri,
+            package: symbol,
+            line: 0,
+            lineEnd: 0,
+            source: ElemSource.modHunter,
+        };
+        return [modElem];
+    }
+
+
+    // let qSymbol = symbol;
+    // // qSymbol = qSymbol.replaceAll("->", "::"); // Module->method() can be found via Module::method
+
+    // if (qSymbol.includes("::") && symbol.includes("->")) {
+    //     // Launching to the wrong explicitly stated module is a bad experience, and common with "require'd" modules
+    //     const method = qSymbol.split("::").pop();
+    //     if (method) {
+    //         // Perhaps the method is within our current scope, explictly imported, or an inherited method (dumper by Inquisitor)
+    //         found = rakuDoc.elems.get(method);
+    //         if (found?.length) return [found[0]];
+
+    //         // Haven't found the method yet, let's check if anything could be a possible match since you don't know the object type
+    //         let foundElems: RakuElem[] = [];
+    //         rakuDoc.elems.forEach((elements: RakuElem[], elemName: string) => {
+    //             const element = elements[0]; // All Elements are with same name are normally the same.
+    //             const elemMethod = elemName.split("::").pop();
+    //             if (elemMethod == method) {
+    //                 foundElems.push(element);
+    //             }
+    //         });
+    //         if (foundElems.length > 0) return foundElems;
+    //     }
+    // }
 
     return [];
 }
@@ -112,4 +158,14 @@ function findRecent (found: RakuElem[], line: number){
         }
     };
     return best;
+}
+
+export async function isFile(file: string): Promise<boolean> {
+    try {
+        const stats = await promises.stat(file);
+        return stats.isFile();
+    } catch (err) {
+        // File or directory doesn't exist
+        return false;
+    }
 }

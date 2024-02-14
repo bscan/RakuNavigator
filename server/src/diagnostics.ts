@@ -2,14 +2,14 @@ import {
     Diagnostic,
     DiagnosticSeverity,
 } from 'vscode-languageserver/node';
-import { NavigatorSettings, CompilationResults } from "./types";
+import { NavigatorSettings, CompilationResults, ParseType} from "./types";
 import {
 	WorkspaceFolder
 } from 'vscode-languageserver-protocol';
 import { dirname, join } from 'path';
 import Uri from 'vscode-uri';
 import { getIncPaths, async_execFile, nLog } from './utils';
-import { buildNav } from "./parseDocument";
+
 
 import {
     TextDocument
@@ -72,9 +72,7 @@ export async function rakucompile(textDocument: TextDocument, workspaceFolders: 
         parseUnhandled(stderr, diagnostics);
     }
 
-    const rakuDoc = await buildNav(stdout); 
-
-    return {diags: diagnostics, rakuDoc: rakuDoc, error: bErrors};
+    return {diags: diagnostics, error: bErrors};
 }
 
 
