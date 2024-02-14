@@ -158,12 +158,12 @@ function packages(state: ParserState): boolean {
         const endLine = PackageEndLine(state);
         MakeElem(state.package_name, RakuSymbolKind.Package, "", state, endLine);
 
-	} else if ((match = state.stmt.match(/^(?:(?:my|our) )?class\s+((?:[\w\-]|::)+)/))) {
+	} else if ((match = state.stmt.match(/^(?:(?:my|our|unit) )?class\s+((?:[\w\-]|::)+)/))) {
         let class_name = match[1];
         state.package_name = class_name;
         const endLine = PackageEndLine(state);
         MakeElem(class_name, RakuSymbolKind.Class, "", state, endLine);
-    } else if ((match = state.stmt.match(/^(?:my )?(?:proto )?role\s+([\w\-:<>]+)/))) {
+    } else if ((match = state.stmt.match(/^(?:(?:my|our|unit) )?(?:proto )?role\s+([\w\-:<>]+)/))) {
         const roleName = match[1];
         // state.package_name = roleName; # Being cautious against changing the package name
         const endLine = SubEndLine(state);
