@@ -36,7 +36,25 @@ export async function getDoc(elem: RakuElem, rakuDoc: RakuDocument, modMap: Map<
 
     // Split the file into lines and iterate through them
     const lines = fileContent.split(/\r?\n/);
-    for (const line of lines) {
+    let prefix = "";
+    for (let line of lines) {
+
+        let match;
+        // Handling =pod to start documentation
+        if (match = line.match(/^(\s*)=(pod|begin pod)/)) {
+            console.log(`Found prefix from:${line} within `);
+            if(match[1]){
+                console.log(`Found specific: !${match[1]}!`);
+                prefix = match[1]
+            }
+        }
+
+        if(prefix){
+            if (line.startsWith(prefix)) {
+                line = line.substring(prefix.length);
+            }
+        }
+
         if (line.startsWith("=cut") || line.startsWith("=end pod")) {
             // =cut lines are not added.
             inPodBlock = false;
@@ -226,7 +244,7 @@ const convertPODToMarkdown = (pod: string): string => {
         }
 
 		// Dataline
-		else if (line.match(/^=(NAME|VERSION|AUTHOR|defn)/)) {
+		else if (line.match(/^=(NAME|VERSION|AUTHOR|defn|title)/)) {
 			finalMarkdown += processData(line);
 		}
 
@@ -552,7 +570,7 @@ const processData =  (line: string): string => {
 	const prefix = line.substring(1, firstSpaceIndex);
 	const data = line.substring(firstSpaceIndex + 1); 
 
-	const output = `\n##### ${prefix}: ${data}\n`;
+	const output = `\n#### ${prefix}: ${data}\n`;
 
     return output;
 };
