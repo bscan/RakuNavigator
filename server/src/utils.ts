@@ -40,7 +40,7 @@ export function getIncPaths(workspaceFolders: WorkspaceFolder[] | null, settings
 export function nLog(message: string, settings: NavigatorSettings){
     // TODO: Remove resource level settings and just use a global logging setting?
     if(settings.logging){
-        console.log(message);
+        console.error(message);
     }
 }
 

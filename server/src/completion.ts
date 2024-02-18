@@ -75,7 +75,6 @@ function getPrefix(text: string, position: number): CompletionPrefix {
         symbol = llChar + lChar + symbol;
         left -= 2;
     }
-    console.log("Symbol: " + symbol + " Left: " + left + " Position: " + position);
     return {symbol: symbol, charStart: left, charEnd: position, stripPackage: false};
 }
 
