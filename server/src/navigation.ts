@@ -23,7 +23,6 @@ export function getDefinition(params: DefinitionParams, rakuDoc: RakuDocument, t
     if(!symbol) return;
 
     const foundElems = lookupSymbol(rakuDoc, modMap, symbol, position.line);
-    console.log(`Looking up: ${symbol}`);
 
     if(foundElems.length == 0){
         return;
