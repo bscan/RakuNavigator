@@ -42,9 +42,7 @@ export async function getDoc(elem: RakuElem, rakuDoc: RakuDocument, modMap: Map<
         let match;
         // Handling =pod to start documentation
         if (match = line.match(/^(\s*)=(pod|begin pod)/)) {
-            console.log(`Found prefix from:${line} within `);
             if(match[1]){
-                console.log(`Found specific: !${match[1]}!`);
                 prefix = match[1]
             }
         }
