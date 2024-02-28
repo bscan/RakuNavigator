@@ -102,6 +102,7 @@ const defaultSettings: NavigatorSettings = {
     rakuPath: "raku",
     includePaths: [],
     logging: false, // Get logging from vscode, but turn it off elsewhere. Sublime Text seems to struggle with it on Windows
+    syntaxCheckEnabled: true,
 };
 
 let globalSettings: NavigatorSettings = defaultSettings;
@@ -208,8 +209,6 @@ documents.onDidChangeContent(change => {
 
 async function validateRakuDocument(textDocument: TextDocument): Promise<void> {
     const settings = await getDocumentSettings(textDocument.uri);
-    nLog("Found settings", settings);
-    const filePath = Uri.parse(textDocument.uri).fsPath;
     
     const start = Date.now();
 
@@ -217,6 +216,12 @@ async function validateRakuDocument(textDocument: TextDocument): Promise<void> {
 
     const rakuDoc = await parseDocument(textDocument, ParseType.selfNavigation);
     navSymbols.set(textDocument.uri, rakuDoc);
+
+    if(!settings.syntaxCheckEnabled){
+        // Clear any potential existing ones
+        sendDiags({ uri: textDocument.uri, diagnostics: [] });
+        return;
+    }
 
     let rakuOut = await rakucompile(textDocument, workspaceFolders, settings); // Start compilation
 

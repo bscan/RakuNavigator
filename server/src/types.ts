@@ -11,6 +11,7 @@ export interface NavigatorSettings {
     rakuPath: string;
     includePaths: string[];
     logging: boolean;
+    syntaxCheckEnabled: boolean;
 }
 
 export interface CompilationResults {

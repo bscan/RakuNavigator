@@ -69,6 +69,12 @@
 					"default": "raku",
 					"description": "Full path to the raku executable (no aliases, .bat files or ~/)"
 				},
+        "raku.syntaxCheckEnabled": {
+					"scope": "resource",
+					"type": "boolean",
+					"default": true,
+					"description": "Enables syntax checking with the raku compiler, similar to raku -c"
+				},
 				"raku.includePaths": {
 					"scope": "resource",
 					"type": "array",
