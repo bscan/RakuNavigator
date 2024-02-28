@@ -43,7 +43,8 @@
           "light": "./images/Raku128.png",
           "dark": "./images/Raku128.png"
         },
-        "configuration": "./language-configuration.json"
+        "configuration": "./language-configuration.json",
+        "firstLine": "(^#!.*\\bperl6\\b)|use\\s+v6|raku|=begin\\spod|my\\sclass"
       }
     ],
     "grammars": [
