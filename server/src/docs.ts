@@ -205,9 +205,9 @@ const convertPODToMarkdown = (pod: string): string => {
                 continue;
             }
         }
-
-        // Inline transformations for code, bold, etc.
-        line = processInlineElements(line);
+        if(!state.inCustomBlock){
+            line = processInlineElements(line);
+        }
 
         // Handling =pod to start documentation
         if (line.startsWith("=pod") || line.startsWith("=begin pod")) {
@@ -241,8 +241,17 @@ const convertPODToMarkdown = (pod: string): string => {
             state = processEncoding(line, state);
         }
 
+        // Title
+		else if (line.match(/^=title /)) {
+			finalMarkdown += line.replace(/^=title/, '\n###') + '\n';
+		}
+        // subtitle
+		else if (line.match(/^=subtitle /)) {
+			finalMarkdown += line.replace(/^=subtitle/, '\n####') + '\n';
+		}
+
 		// Dataline
-		else if (line.match(/^=(NAME|VERSION|AUTHOR|defn|title)/)) {
+		else if (line.match(/^=(NAME|VERSION|AUTHOR|defn)/)) {
 			finalMarkdown += processData(line);
 		}
 
@@ -331,10 +340,11 @@ const processCustomBlock = (line: string, state: ConversionState): ConversionSta
         // Extract the format following =begin
         const format = line.slice(7).trim();
         state.inCustomBlock = true;
-
         // Choose Markdown representation based on the format
         switch (format) {
             case "code":
+            case "code :lang<raku>":
+            case "code :lang&lt;raku&gt;":
                 markdown = "```raku\n";
                 break;
             // Add cases for other formats as needed
