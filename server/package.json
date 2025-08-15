@@ -1,7 +1,7 @@
 {
 	"name": "raku-navigator-server",
 	"description": "Raku language server",
-	"version": "0.3.2",
+	"version": "0.4.0",
 	"author": "bscan",
 	"license": "MIT",
 	"engines": {
