@@ -44,8 +44,10 @@ export function activate(context: ExtensionContext) {
 		],
 		synchronize: {
 			configurationSection: 'raku',
-			// Notify the server about file changes to '.clientrc files contained in the workspace
-			// fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
+			// Notify the server about file changes to Raku files contained in the workspace
+			fileEvents: [
+				workspace.createFileSystemWatcher('**/*.{raku,rakumod,rakudoc,rakutest,pm6,p6,t6}')
+			]
 		}
 	};
 

@@ -3,6 +3,8 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { RakuDocument, RakuElem, RakuSymbolKind } from "./types";
 import { getSymbol, lookupSymbol } from "./utils";
 import { getDoc } from './docs';
+import Uri from 'vscode-uri';
+import { dirname, relative } from 'path';
 
 export async function getHover(params: TextDocumentPositionParams, rakuDoc: RakuDocument, txtDoc: TextDocument, modMap: Map<string, string>): Promise<Hover | undefined> {
 
@@ -20,7 +22,19 @@ export async function getHover(params: TextDocumentPositionParams, rakuDoc: Raku
     let title = buildHoverDoc(symbol, elem);
     if(!title) return; // Sometimes, there's nothing worth showing.
 
+    // Show the source file and line when the element is from another file
+    const elemPath = Uri.parse(elem.uri).fsPath;
+    const docPath = Uri.parse(txtDoc.uri).fsPath;
     let merged = title;
+    if (elemPath !== docPath) {
+        const base = dirname(docPath);
+        let rel = relative(base, elemPath).replace(/\\/g, '/');
+        if (!rel.startsWith('.') && !rel.startsWith('/')) {
+            rel = `./${rel}`;
+        }
+    // Style: FooBar [./path/to/file]
+    merged = `${title} [${rel}]`;
+    }
 
 
     let docs = await getDoc(elem, rakuDoc, modMap);

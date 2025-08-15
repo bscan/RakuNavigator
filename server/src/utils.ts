@@ -9,6 +9,7 @@ import {
     Position
 } from 'vscode-languageserver-textdocument';
 import { NavigatorSettings, RakuDocument, RakuElem, RakuSymbolKind, ElemSource } from "./types";
+import { workspaceIndex } from "./workspaceIndex";
 import { promises } from "fs";
 import { existsSync } from 'fs';
 import { join } from 'path';
@@ -112,6 +113,9 @@ export function lookupSymbol(rakuDoc: RakuDocument, modMap: Map<string, string>,
     if(found?.length){
         // Simple lookup worked. If we have multiple (e.g. 2 lexical variables), find the nearest earlier declaration. 
         const best = findRecent(found, line);
+    // Debug: local match found
+    // Note: No settings at this call site, so rely on global logging default
+    nLog(`lookupSymbol: local match for ${symbol} at line ${best.line}`, { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true });
         return [best];
     }
 
@@ -128,7 +132,8 @@ export function lookupSymbol(rakuDoc: RakuDocument, modMap: Map<string, string>,
             lineEnd: 0,
             source: ElemSource.modHunter,
         };
-        return [modElem];
+    nLog(`lookupSymbol: module map match for ${symbol}`, { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true });
+    return [modElem];
     }
 
 
@@ -155,6 +160,13 @@ export function lookupSymbol(rakuDoc: RakuDocument, modMap: Map<string, string>,
     //         if (foundElems.length > 0) return foundElems;
     //     }
     // }
+
+    // Fall back to workspace token/rule index if nothing found locally
+    const ws = workspaceIndex.findByName(symbol);
+    if (ws.length > 0) {
+        nLog(`lookupSymbol: workspace index match for ${symbol} -> ${ws.length} symbol(s)`, { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true });
+        return ws;
+    }
 
     return [];
 }

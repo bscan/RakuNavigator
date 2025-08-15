@@ -27,11 +27,12 @@ import Uri from 'vscode-uri';
 import { getDefinition, getAvailableMods } from "./navigation";
 import { NavigatorSettings, RakuDocument, ParseType, RakuElem } from "./types";
 import { rakucompile } from "./diagnostics";
-import { nLog } from './utils';
+import { nLog, getSymbol } from './utils';
 import { getSymbols } from "./symbols";
 import { getHover } from "./hover";
 import { getCompletions, getCompletionDoc } from './completion';
 import { parseDocument } from "./parser";
+import { workspaceIndex, resetWorkspaceIndex } from './workspaceIndex';
 
 var LRU = require("lru-cache");
 
@@ -44,6 +45,7 @@ const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
 const navSymbols = new LRU({max: 350000, length: function (value:RakuDocument , key:string) { return value.elems.size }});
 
+// Workspace-wide token index singleton is imported
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
@@ -89,9 +91,24 @@ connection.onInitialized(() => {
     }
     if (hasWorkspaceFolderCapability) {
         connection.workspace.onDidChangeWorkspaceFolders(_event => {
-            // connection.console.log('Workspace folder change event received.');
+        // Rebuild workspace token index on folder change
+        resetWorkspaceIndex();
+    getWorkspaceFoldersSafe().then(async (folders) => {
+            const anyDoc = documents.all()[0];
+            const settings = anyDoc ? await getDocumentSettings(anyDoc.uri) : undefined;
+            nLog('Workspace folders changed; rebuilding token index', settings || globalSettings);
+            await workspaceIndex.build(folders, settings);
+        });
         });
     }
+
+    // Build initial workspace index and register to file change notifications
+    getWorkspaceFoldersSafe().then(async (folders) => {
+        const anyDoc = documents.all()[0];
+        const settings = anyDoc ? await getDocumentSettings(anyDoc.uri) : undefined;
+        nLog('Initial workspace token index build starting', settings || globalSettings);
+        await workspaceIndex.build(folders, settings);
+    });
 });
 
 
@@ -193,8 +210,12 @@ documents.onDidOpen(change => {
 });
 
 
-documents.onDidSave(change => {
+documents.onDidSave(async change => {
     validateRakuDocument(change.document);
+    // Also update index for saved file if it's a Raku file
+    const settings = await getDocumentSettings(change.document.uri);
+    nLog(`onDidSave: reindexing ${change.document.uri}`, settings);
+    await workspaceIndex.reindexFile(change.document.uri, settings);
 });
 
 
@@ -204,6 +225,21 @@ documents.onDidChangeContent(change => {
     if(timer) clearTimeout(timer);
     const newTimer = setTimeout(function(){ validateRakuDocument(change.document)}, 1000);
     timers.set(change.document.uri, newTimer);
+});
+
+// LSP file watch notifications (requires client fileEvents watchers)
+connection.onDidChangeWatchedFiles(async (change) => {
+    for (const c of change.changes) {
+        const uri = c.uri;
+        // We don't need to distinguish create/change/delete here strictly; reindexFile removes old entries first
+        if (c.type === 3 /* Deleted */) {
+            nLog(`onDidChangeWatchedFiles: remove ${uri}`, globalSettings);
+            workspaceIndex.removeFile(uri, globalSettings);
+        } else {
+            nLog(`onDidChangeWatchedFiles: reindex ${uri}`, globalSettings);
+            await workspaceIndex.reindexFile(uri, globalSettings);
+        }
+    }
 });
 
 
@@ -316,6 +352,20 @@ connection.onDefinition(params => {
     if(!document) return;
     if(!rakuDoc) return; // navSymbols is an LRU cache, so the navigation elements will be missing if you open lots of files
     let locOut: Location | Location[] | undefined = getDefinition(params, rakuDoc, document, mods);
+
+    // Fallback: if nothing found, try workspace token index
+    if (!locOut || (Array.isArray(locOut) && locOut.length === 0)) {
+        const symbol = getSymbol(params.position, document);
+        if (symbol) {
+            const tokenLocs = workspaceIndex.getLocations(symbol);
+            if (tokenLocs.length === 0) {
+                nLog(`Definition fallback: no workspace symbol for ${symbol}`, globalSettings);
+            } else {
+                nLog(`Definition fallback: ${symbol} -> ${tokenLocs.length} locations`, globalSettings);
+            }
+            if (tokenLocs.length > 0) return tokenLocs;
+        }
+    }
     return locOut;
 });
 

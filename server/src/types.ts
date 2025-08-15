@@ -85,4 +85,5 @@ export enum ParseType {
     outline,
     selfNavigation,
     refinement,
+    workspaceIndex,
 }

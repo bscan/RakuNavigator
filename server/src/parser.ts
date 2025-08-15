@@ -54,6 +54,10 @@ export async function parseDocument(textDocument: TextDocument, parseType: Parse
         case ParseType.outline:
             parseFunctions = [subs, fields, phasers, tokens, imports];
             break;
+        case ParseType.workspaceIndex:
+            // Indexing for workspace symbol/navigation
+            parseFunctions = [subs, fields, phasers, tokens];
+            break;
         case ParseType.selfNavigation:
             parseFunctions = [knownObj, localVars, subs, tokens, fields, imports];
             break;
@@ -365,7 +369,7 @@ async function cleanCode(textDocument: TextDocument, rakuDoc: RakuDocument, pars
         codeClean.push(mod_stmt);
     }
 
-    if (parseType == ParseType.outline) {
+    if (parseType == ParseType.outline || parseType == ParseType.workspaceIndex) {
         // If only doing shallow parsing, we don't need to strip {} or find start-end points of subs
         codeClean = await stripCommentsAndQuotes(codeClean);
     }
@@ -411,7 +415,7 @@ function MakeElem(name: string, type: RakuSymbolKind | TagKind, typeDetail: stri
 function SubEndLine(state: ParserState, rFilter: RegExp | null = null): number {
     let pos = 0;
     let found = false;
-    if (state.parseType != ParseType.outline) {
+    if (state.parseType != ParseType.outline && state.parseType != ParseType.workspaceIndex) {
         return state.line_number;
     }
 
@@ -447,7 +451,7 @@ function SubEndLine(state: ParserState, rFilter: RegExp | null = null): number {
 }
 
 function PackageEndLine(state: ParserState) {
-    if (state.parseType != ParseType.outline) {
+    if (state.parseType != ParseType.outline && state.parseType != ParseType.workspaceIndex) {
         return state.line_number;
     }
 
