@@ -212,7 +212,14 @@ function subs(state: ParserState): boolean {
     let match;
     // This is a sub declaration if the line starts with sub
     if (
-        (match = state.stmt.match(/^multi\s+(?:(sub|method|submethod)\s+)?!?([\w\-]+)((?::[\w\-<>]+)?\s?\([^()]+\))/)) // Grab signature for Multi-sub.
+    // Relaxed: allow multi declarations without requiring the signature on the same line
+    // to handle cases like:
+    //   multi sub foo
+    //   (
+    //     :$bar!
+    //   ) is export { ... }
+    // Also tolerate traits after the name before the brace.
+    (match = state.stmt.match(/^multi\s+(?:(sub|method|submethod)\s+)?!?([\w\-]+)((?::[\w\-<>]+)?[^\{;]*)/))
 		|| (match = state.stmt.match(/^(?:(?:my|our) )?(sub|method|submethod)\s+!?([\w\-]+)((?::[\w\-<>]+)?[^{]*)/))
     ) {
 		// TODO: Captures multi-dispatch details and signature for display in the outline, different from the symbol name itself

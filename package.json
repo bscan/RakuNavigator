@@ -106,7 +106,7 @@
     "compile": "tsc -b",
     "watch": "tsc -b -w",
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
-  "test": "npm run compile && mocha -r ts-node/register -r tsconfig-paths/register --require source-map-support/register --reporter spec \"test/unit/**/*.ts\"",
+  "test": "npm run compile && TS_NODE_PROJECT=tsconfig.test.json mocha -r ts-node/register -r tsconfig-paths/register --require source-map-support/register --reporter spec \"test/unit/**/*.ts\"",
     "build-binary": "tsc -b && pkg ."
   },
   "devDependencies": {

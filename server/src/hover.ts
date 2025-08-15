@@ -1,6 +1,6 @@
 import { TextDocumentPositionParams, Hover, MarkupContent, MarkupKind } from "vscode-languageserver/node";
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { RakuDocument, RakuElem, RakuSymbolKind } from "./types";
+import { RakuDocument, RakuElem, RakuSymbolKind, ElemSource } from "./types";
 import { getSymbol, lookupSymbol } from "./utils";
 import { getDoc } from './docs';
 import Uri from 'vscode-uri';
@@ -27,13 +27,24 @@ export async function getHover(params: TextDocumentPositionParams, rakuDoc: Raku
     const docPath = Uri.parse(txtDoc.uri).fsPath;
     let merged = title;
     if (elemPath !== docPath) {
-        const base = dirname(docPath);
-        let rel = relative(base, elemPath).replace(/\\/g, '/');
-        if (!rel.startsWith('.') && !rel.startsWith('/')) {
-            rel = `./${rel}`;
+        let displayPath: string | undefined;
+        if (elem.source === ElemSource.modHunter) {
+            // For modules discovered via getMods.raku, avoid odd-looking deep relative paths
+            displayPath = elemPath.replace(/\\/g, '/');
+        } else {
+            const base = dirname(docPath);
+            let rel = relative(base, elemPath);
+            // If the relative path escapes upwards (../../..), prefer absolute to avoid noise
+            if (rel.startsWith('..')) {
+                displayPath = elemPath;
+            } else {
+                // Keep as clean relative path without leading './'
+                displayPath = rel;
+            }
+            displayPath = displayPath.replace(/\\/g, '/');
         }
-    // Style: FooBar [./path/to/file]
-    merged = `${title} [${rel}]`;
+        // Style: FooBar [/abs/or/relative/path]
+        merged = `${title} [${displayPath}]`;
     }
 
 

@@ -111,12 +111,17 @@ export function lookupSymbol(rakuDoc: RakuDocument, modMap: Map<string, string>,
 
     let found = rakuDoc.elems.get(symbol);
     if(found?.length){
-        // Simple lookup worked. If we have multiple (e.g. 2 lexical variables), find the nearest earlier declaration. 
-        const best = findRecent(found, line);
-    // Debug: local match found
-    // Note: No settings at this call site, so rely on global logging default
-    nLog(`lookupSymbol: local match for ${symbol} at line ${best.line}`, { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true });
-        return [best];
+        // Variables: choose the most recent earlier declaration
+        if (/^[\$@%]/.test(symbol)) {
+            const best = findRecent(found, line);
+            // Debug: local match found
+            // Note: No settings at this call site, so rely on global logging default
+            nLog(`lookupSymbol: local match for ${symbol} at line ${best.line}`, { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true });
+            return [best];
+        }
+        // Subroutines/methods and other non-sigil symbols: return all matches (e.g., multi subs)
+        nLog(`lookupSymbol: local multi matches for ${symbol} -> ${found.length} symbol(s)`, { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true });
+        return found;
     }
 
     let foundMod = modMap.get(symbol);

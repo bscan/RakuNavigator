@@ -4,8 +4,6 @@ import URI from 'vscode-uri';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const diagnostics = require('../../server/out/diagnostics');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const utils = require('../../server/out/utils');
 
 type Settings = {
   rakuPath: string;
@@ -29,10 +27,10 @@ function mkDoc(text: string) {
 describe('diagnostics.parseJSON nested payload', () => {
   let originalExec: any;
   beforeEach(() => {
-    originalExec = utils.async_execFile;
+    originalExec = diagnostics.runWithStdin;
   });
   afterEach(() => {
-    utils.async_execFile = originalExec;
+    diagnostics.runWithStdin = originalExec;
   });
 
   it('unwraps nested message/payload JSON and reports import failed with inner details', async () => {
@@ -80,7 +78,7 @@ describe('diagnostics.parseJSON nested payload', () => {
       },
     };
 
-    utils.async_execFile = async () => ({ stdout: '', stderr: JSON.stringify(outer) });
+  diagnostics.runWithStdin = async () => ({ stdout: '', stderr: JSON.stringify(outer), code: 1, signal: null });
 
     const res = await diagnostics.rakucompile(doc, null, settings);
     assert.ok(res, 'should get compilation results');

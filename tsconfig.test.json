@@ -6,8 +6,8 @@
     "rootDir": ".",
     "types": ["mocha", "node", "vscode"],
     "module": "commonjs",
-    "target": "es2019",
-    "lib": ["ES2019"]
+  "target": "es2021",
+  "lib": ["ES2021", "DOM"]
   },
   "include": [
     "test/unit/**/*.ts"

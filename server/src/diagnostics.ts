@@ -6,10 +6,7 @@ import { NavigatorSettings, CompilationResults, ParseType} from "./types";
 import {
         WorkspaceFolder
 } from 'vscode-languageserver-protocol';
-import { join } from 'path';
-import { tmpdir } from 'os';
-import { promises as fs } from 'fs';
-import { getIncPaths, async_execFile, nLog } from './utils';
+import { getIncPaths, nLog, async_execFile } from './utils';
 
 
 import {
@@ -23,16 +20,8 @@ export async function rakucompile(textDocument: TextDocument, workspaceFolders: 
     rakuParams = rakuParams.concat(getIncPaths(workspaceFolders, settings));
 
     const code = textDocument.getText();
-    const tmpFile = join(tmpdir(), `raku-navigator-${process.pid}-${Date.now()}.raku`);
-    try {
-        await fs.writeFile(tmpFile, code, 'utf8');
-    } catch (error) {
-        nLog("Failed to write temporary file for compilation", settings);
-        nLog(String(error), settings);
-        return;
-    }
-
-    rakuParams = rakuParams.concat(['-c', tmpFile]);
+    // Compile from STDIN: "-c -" checks syntax only and reads program from stdin
+    rakuParams = rakuParams.concat(['-c', '-']);
 
     nLog(`Starting raku compilation check with "${settings.rakuPath} ${rakuParams.join(" ")}"`, settings);
 
@@ -45,20 +34,22 @@ export async function rakucompile(textDocument: TextDocument, workspaceFolders: 
     myenv.RAKU_EXCEPTIONS_HANDLER = 'JSON';
 
     let bErrors = false;
+    // Spawn raku and pipe the document on stdin to avoid temp files
+    const maxBuffer = 20 * 1024 * 1024; // 20MB
     try {
-        const out = await async_execFile(settings.rakuPath, rakuParams, {timeout: 10000, maxBuffer: 20 * 1024 * 1024, env: myenv});
+        const out = await runWithStdin(settings.rakuPath, rakuParams, { env: myenv, timeout: 10000, maxBuffer }, code);
         stderr = out.stderr;
         stdout = out.stdout;
-    } catch(error: any) {
-        // TODO: Check if we overflowed the buffer.
-        if("stderr" in error && "stdout" in error){
-            stderr = error.stderr;
-            stdout = error.stdout;
-            bErrors = true; // Indicates compilation errors
+        bErrors = out.code !== 0; // non-zero exit indicates compilation errors
+    } catch (error: any) {
+        // Surface any captured output
+        if (error && ("stderr" in error || "stdout" in error)) {
+            stderr = String(error.stderr || '');
+            stdout = String(error.stdout || '');
+            bErrors = true;
         } else {
             nLog("rakucompile failed with unknown error", settings);
             nLog(String(error), settings);
-            try { await fs.unlink(tmpFile); } catch (_) {}
             return;
         }
     }
@@ -75,10 +66,41 @@ export async function rakucompile(textDocument: TextDocument, workspaceFolders: 
         parseUnhandled(stdout, diagnostics);
     }
 
-    try { await fs.unlink(tmpFile); } catch (_) {}
-
     return {diags: diagnostics, error: bErrors};
 }
+
+// Execute a command, writing `input` to stdin; resolves with stdout/stderr on exit.
+// Implements a timeout and basic maxBuffer enforcement similar to execFile.
+export function execWithStdin(cmd: string, args: string[], opts: { env?: NodeJS.ProcessEnv, timeout?: number, maxBuffer?: number }, input: string): Promise<{ stdout: string, stderr: string, code: number | null, signal: NodeJS.Signals | null }> {
+    // Use promisified execFile so we get built-in timeout/maxBuffer handling,
+    // but feed stdin by accessing the underlying child via the Promise's .child property.
+    return new Promise((resolve) => {
+        const procPromise: any = async_execFile(cmd, args, { env: opts.env, timeout: opts.timeout, maxBuffer: opts.maxBuffer });
+        // Best-effort stdin write
+        try {
+            procPromise?.child?.stdin?.write(input);
+            procPromise?.child?.stdin?.end();
+        } catch (_) {
+            // Ignore stdin errors; exec will still surface process results below
+        }
+        procPromise
+            .then((out: { stdout: string; stderr: string }) => {
+                resolve({ stdout: out.stdout, stderr: out.stderr, code: 0, signal: null });
+            })
+            .catch((err: any) => {
+                // execFile rejects on non-zero exit; convert to a resolved result with code/signal
+                resolve({
+                    stdout: String(err?.stdout ?? ''),
+                    stderr: String(err?.stderr ?? ''),
+                    code: typeof err?.code === 'number' ? err.code : 1,
+                    signal: (err?.signal ?? null) as NodeJS.Signals | null,
+                });
+            });
+    });
+}
+
+// Stub-able runner used by rakucompile; tests can overwrite this export.
+export let runWithStdin = execWithStdin;
 
 
 // Try to parse a value as JSON if it looks like JSON; otherwise return undefined
@@ -152,10 +174,10 @@ function parseJSON(stderr: string, diagnostics: Diagnostic[], document?: TextDoc
                 diagnostics.push({
                     severity: DiagnosticSeverity.Error,
                     range: {
-                        start: { line: lineNum, character: charNum },
-                        end: { line: lineNum, character: charNum + 1 }
+                        start: { line: lineNum, character: 0 },
+                        end: { line: lineNum, character: 500 }
                     },
-                    message,
+                    message: "Syntax: " + message,
                     source: 'raku navigator'
                 });
                 parsed = true;
@@ -174,14 +196,33 @@ function parseUnhandled(violations: string, diagnostics: Diagnostic[]): void {
 
     let match: RegExpExecArray | null;
     let lineNum: number;
-    // Currently we compile twice and get double warnings. This hack cuts it down.
-    // TODO: Any actual examples of this now that we compile differently?
-    var re =  /^\s+(.+?)\n\s+at.+\:(\d+)$/gm;
-    while(match = re.exec(violations)){
+    // Support both indented and non-indented warning/location forms
+    // 1. Indented:   <msg>\n   at ...:N
+    // 2. Non-indented: <msg>\nin ... at ... line N
+    const reIndented = /^\s+(.+?)\n\s+at.+\:(\d+)$/gm;
+    const reBlock = /^(.+?)\n\s*in .+ at .+ line (\d+)$/gm;
+
+    // Indented form
+    while ((match = reIndented.exec(violations))) {
         lineNum = +match[2] - 1;
         let message = match[1];
-        if(lineNum < 0) lineNum = 0;
+        if (lineNum < 0) lineNum = 0;
+        diagnostics.push({
+            severity: DiagnosticSeverity.Warning,
+            range: {
+                start: { line: lineNum, character: 0 },
+                end: { line: lineNum, character: 500 }
+            },
+            message: "Warning: " + message,
+            source: 'raku navigator'
+        });
+    }
 
+    // Non-indented 'in ... at ... line N' form
+    while ((match = reBlock.exec(violations))) {
+        lineNum = +match[2] - 1;
+        let message = match[1];
+        if (lineNum < 0) lineNum = 0;
         diagnostics.push({
             severity: DiagnosticSeverity.Warning,
             range: {

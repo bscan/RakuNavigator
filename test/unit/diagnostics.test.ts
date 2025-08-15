@@ -5,8 +5,6 @@ import URI from 'vscode-uri';
 // Import compiled JS from server/out; use require for runtime path while keeping TS types loose
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const diagnostics = require('../../server/out/diagnostics');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const utils = require('../../server/out/utils');
 
 type Settings = {
   rakuPath: string;
@@ -30,10 +28,10 @@ function mkDoc(text: string) {
 describe('diagnostics.rakucompile', () => {
   let originalExec: any;
   beforeEach(() => {
-    originalExec = utils.async_execFile;
+    originalExec = diagnostics.runWithStdin;
   });
   afterEach(() => {
-    utils.async_execFile = originalExec;
+    diagnostics.runWithStdin = originalExec;
   });
 
   it('parses JSON stderr into error diagnostics with pos mapping', async () => {
@@ -41,16 +39,17 @@ describe('diagnostics.rakucompile', () => {
     const doc = mkDoc('abc\ndef\n');
     const settings = mkSettings();
 
-    const jsonLine = JSON.stringify({ MAIN: { message: 'Unexpected token', pos: 5 } });
-    utils.async_execFile = async () => ({ stdout: '', stderr: jsonLine });
+  const jsonLine = JSON.stringify({ MAIN: { message: 'Unexpected token', pos: 5 } });
+  diagnostics.runWithStdin = async () => ({ stdout: '', stderr: jsonLine, code: 1, signal: null });
 
     const res = await diagnostics.rakucompile(doc, null, settings);
     assert.ok(res, 'should get compilation results');
     assert.equal(res.error, true, 'error flag should be true when JSON stderr present');
     assert.ok(res.diags.length === 1, 'one diagnostic');
 
-    const d = res.diags[0];
-    assert.equal(d.message, 'Unexpected token');
+  const d = res.diags[0];
+  // Message should include the error text (may be prefixed by 'Syntax: ')
+  assert.ok(String(d.message).includes('Unexpected token'));
     assert.equal(d.range.start.line, 1);
     assert.equal(d.range.start.character, 0);
   });
@@ -59,8 +58,8 @@ describe('diagnostics.rakucompile', () => {
     const doc = mkDoc('line1\nline2\nline3\n');
     const settings = mkSettings();
 
-    const out = '  Possible issue here\n  at /some/file:2\n';
-    utils.async_execFile = async () => ({ stdout: out, stderr: '' });
+  const out = '  Possible issue here\n  at /some/file:2\n';
+  diagnostics.runWithStdin = async () => ({ stdout: out, stderr: '', code: 0, signal: null });
 
     const res = await diagnostics.rakucompile(doc, null, settings);
     assert.ok(res, 'should get compilation results');

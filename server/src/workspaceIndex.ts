@@ -53,8 +53,8 @@ export class WorkspaceIndex {
             return 0;
         }
 
-        const namesForFile: string[] = [];
-        let added = 0;
+    const namesForFileSet = new Set<string>();
+    let added = 0;
         // Which symbol kinds to include in the index
         const includeKinds = new Set<RakuSymbolKind>([
             RakuSymbolKind.Token,
@@ -68,18 +68,38 @@ export class WorkspaceIndex {
             RakuSymbolKind.Package,
         ]);
 
+        const aliasKinds = new Set<RakuSymbolKind>([
+            RakuSymbolKind.LocalSub,
+            RakuSymbolKind.LocalMethod,
+        ]);
+
+        const addToIndex = (key: string, elem: RakuElem) => {
+            let list = this.symbolsByName.get(key);
+            if (!list) list = [];
+            list.push(elem);
+            this.symbolsByName.set(key, list);
+            namesForFileSet.add(key);
+            added += 1;
+        };
+
         rdoc.elems.forEach((arr, name) => {
             if (!arr || arr.length === 0) return;
-            // Index selected symbol kinds for navigation
             const filtered = arr.filter(e => includeKinds.has(e.type as RakuSymbolKind));
             if (filtered.length === 0) return;
-            const list = this.symbolsByName.get(name) || [];
-            for (const e of filtered) list.push(e);
-            this.symbolsByName.set(name, list);
-            namesForFile.push(name);
-            added += filtered.length;
+
+            for (const e of filtered) {
+                // Always index by the bare name
+                addToIndex(name, e);
+                // For functions (subs/methods), also index as package::name if available
+                if (aliasKinds.has(e.type as RakuSymbolKind)) {
+                    const pkg = (e.package || '').trim();
+                    if (pkg && !name.includes('::')) {
+                        addToIndex(`${pkg}::${name}`, e);
+                    }
+                }
+            }
         });
-        if (namesForFile.length) this.fileToNames.set(uri, namesForFile);
+        if (namesForFileSet.size) this.fileToNames.set(uri, Array.from(namesForFileSet));
         nLog(`WorkspaceIndex: reindexed ${uri} — ${added} symbols`, settings || { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true });
         return added;
     }
