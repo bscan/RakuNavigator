@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "outDir": "out",
+    "rootDir": ".",
+    "types": ["mocha", "node", "vscode"],
+    "module": "commonjs",
+    "target": "es2019",
+    "lib": ["ES2019"]
+  },
+  "include": [
+    "test/unit/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "client/out",
+    "server/out"
+  ]
+}

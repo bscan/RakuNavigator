@@ -218,6 +218,7 @@ async function validateRakuDocument(textDocument: TextDocument): Promise<void> {
     navSymbols.set(textDocument.uri, rakuDoc);
 
     if(!settings.syntaxCheckEnabled){
+        nLog("Syntax checking disabled", settings);
         // Clear any potential existing ones
         sendDiags({ uri: textDocument.uri, diagnostics: [] });
         return;

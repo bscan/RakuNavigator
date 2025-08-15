@@ -10,6 +10,8 @@ import {
 } from 'vscode-languageserver-textdocument';
 import { NavigatorSettings, RakuDocument, RakuElem, RakuSymbolKind, ElemSource } from "./types";
 import { promises } from "fs";
+import { existsSync } from 'fs';
+import { join } from 'path';
 
 export const async_execFile = promisify(execFile);
 
@@ -32,7 +34,16 @@ export function getIncPaths(workspaceFolders: WorkspaceFolder[] | null, settings
         }
     });
 
-    // Should I include "lib" by default?
+    // Automatically include ./lib from each workspace folder
+    if (workspaceFolders) {
+        workspaceFolders.forEach(workspaceFolder => {
+            const wsPath = Uri.parse(workspaceFolder.uri).fsPath;
+            const libPath = join(wsPath, 'lib');
+            if (existsSync(libPath)) {
+                includePaths = includePaths.concat(["-I", libPath]);
+            }
+        });
+    }
     return includePaths;
 }
 
