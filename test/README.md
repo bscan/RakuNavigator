@@ -1,9 +1,8 @@
 # Tests
 
-This folder contains VS Code integration tests for the Raku Navigator extension using Mocha and @vscode/test-electron.
+This folder contains unit tests for the Raku Navigator server using Mocha.
 
-- `runTest.ts` boots VS Code with the extension and runs tests from `suite/`.
-- `suite/extension.test.ts` contains basic LSP feature checks.
+- `unit/` contains focused tests for server utilities and diagnostics.
 
 Run:
 
