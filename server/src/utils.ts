@@ -11,7 +11,6 @@ import {
 import { NavigatorSettings, RakuDocument, RakuElem, RakuSymbolKind, ElemSource } from "./types";
 import { workspaceIndex } from "./workspaceIndex";
 import { promises } from "fs";
-import { existsSync } from 'fs';
 import { join } from 'path';
 
 export const async_execFile = promisify(execFile);
@@ -35,14 +34,12 @@ export function getIncPaths(workspaceFolders: WorkspaceFolder[] | null, settings
         }
     });
 
-    // Automatically include ./lib from each workspace folder
+    // Automatically include each workspace folder root and its lib subfolder (workspace first)
     if (workspaceFolders) {
         workspaceFolders.forEach(workspaceFolder => {
             const wsPath = Uri.parse(workspaceFolder.uri).fsPath;
             const libPath = join(wsPath, 'lib');
-            if (existsSync(libPath)) {
-                includePaths = includePaths.concat(["-I", libPath]);
-            }
+            includePaths = includePaths.concat(["-I", wsPath, "-I", libPath]);
         });
     }
     return includePaths;
