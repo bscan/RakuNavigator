@@ -31,6 +31,7 @@ import { nLog, getSymbol } from './utils';
 import { getSymbols } from "./symbols";
 import { getHover } from "./hover";
 import { getCompletions, getCompletionDoc } from './completion';
+import { getSignature } from './signature';
 import { parseDocument } from "./parser";
 import { workspaceIndex, resetWorkspaceIndex } from './workspaceIndex';
 
@@ -68,6 +69,10 @@ connection.onInitialize((params: InitializeParams) => {
             completionProvider: {
                 resolveProvider: true,
                 triggerCharacters: ['$','@','%','-', '>',':','.']
+            },
+            signatureHelpProvider: {
+                triggerCharacters: ['(', ','],
+                retriggerCharacters: [',']
             },
             documentSymbolProvider: true, // Outline view and breadcrumbs
             definitionProvider: true, // goto definition
@@ -377,15 +382,13 @@ connection.onDocumentSymbol(async (params) => {
     return getSymbols(document, params.textDocument.uri);
 });
 
-// connection.onSignatureHelp(async (params) => {
-//     let document = documents.get(params.textDocument.uri);
-//     let rakuDoc = navSymbols.get(params.textDocument.uri);
-//     let mods = availableMods.get("default");
-//     if (!mods) mods = new Map();
-//     if (!document || !rakuDoc) return;
-//     const signature = await getSignature(params, rakuDoc, document, mods);
-//     return signature;
-// });
+connection.onSignatureHelp(async (params) => {
+    let document = documents.get(params.textDocument.uri);
+    let rakuDoc = navSymbols.get(params.textDocument.uri);
+    if (!document || !rakuDoc) return;
+    const signature = await getSignature(params, rakuDoc, document);
+    return signature;
+});
 
 
 process.on('unhandledRejection', function(reason, p){

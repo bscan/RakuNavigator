@@ -408,9 +408,9 @@ function MakeElem(name: string, type: RakuSymbolKind | TagKind, typeDetail: stri
         source: ElemSource.parser,
     };
 
-    // if (signature?.length > 0) {
-    //     newElem.signature = signature;
-    // }
+    if (signature && signature.length > 0) {
+        newElem.signature = signature;
+    }
 
     let array = state.rakuDoc.elems.get(name) || [];
     array.push(newElem);
