@@ -87,6 +87,12 @@
           "default": true,
           "description": "Log to stdout from the navigator. Viewable in the Raku Navigator LSP log"
         },
+        "raku.formattingEnabled": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enable code formatting for Raku files"
+        },
         "raku.trace.server": {
           "scope": "window",
           "type": "string",

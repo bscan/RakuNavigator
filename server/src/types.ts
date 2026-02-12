@@ -12,6 +12,7 @@ export interface NavigatorSettings {
     includePaths: string[];
     logging: boolean;
     syntaxCheckEnabled: boolean;
+    formattingEnabled: boolean;
 }
 
 export interface CompilationResults {

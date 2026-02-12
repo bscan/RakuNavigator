@@ -34,6 +34,7 @@ import { getCompletions, getCompletionDoc } from './completion';
 import { getSignature } from './signature';
 import { parseDocument } from "./parser";
 import { workspaceIndex, resetWorkspaceIndex } from './workspaceIndex';
+import { formatDocument } from './formatting';
 
 var LRU = require("lru-cache");
 
@@ -76,7 +77,8 @@ connection.onInitialize((params: InitializeParams) => {
             },
             documentSymbolProvider: true, // Outline view and breadcrumbs
             definitionProvider: true, // goto definition
-            hoverProvider: true, 
+            hoverProvider: true,
+            documentFormattingProvider: true, // Format document
         }
     };
     if (hasWorkspaceFolderCapability) {
@@ -125,6 +127,7 @@ const defaultSettings: NavigatorSettings = {
     includePaths: [],
     logging: false, // Get logging from vscode, but turn it off elsewhere. Sublime Text seems to struggle with it on Windows
     syntaxCheckEnabled: true,
+    formattingEnabled: true,
 };
 
 let globalSettings: NavigatorSettings = defaultSettings;
@@ -388,6 +391,30 @@ connection.onSignatureHelp(async (params) => {
     if (!document || !rakuDoc) return;
     const signature = await getSignature(params, rakuDoc, document);
     return signature;
+});
+
+connection.onDocumentFormatting(async (params) => {
+    const document = documents.get(params.textDocument.uri);
+    if (!document) return [];
+
+    const settings = await getDocumentSettings(params.textDocument.uri);
+
+    if (!settings.formattingEnabled) {
+        nLog("Formatting is disabled", settings);
+        return [];
+    }
+
+    const workspaceFolders = await getWorkspaceFoldersSafe();
+
+    nLog("Formatting document: " + params.textDocument.uri, settings);
+
+    try {
+        const edits = await formatDocument(document, params.options, workspaceFolders, settings);
+        return edits;
+    } catch (error: any) {
+        nLog("Format document failed: " + (error?.message || error), settings);
+        return [];
+    }
 });
 
 

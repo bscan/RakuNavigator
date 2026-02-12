@@ -1,0 +1,1 @@
+{"root":["./src/completion.ts","./src/diagnostics.ts","./src/docs.ts","./src/formatting.ts","./src/hover.ts","./src/navigation.ts","./src/parseDocument.ts","./src/parser.ts","./src/server.ts","./src/signature.ts","./src/symbols.ts","./src/types.ts","./src/utils.ts","./src/workspaceIndex.ts"],"errors":true,"version":"5.9.3"}

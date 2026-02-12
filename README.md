@@ -6,11 +6,12 @@ This is a Raku Extension for Visual Studio Code including a Language Server. Cur
 - Definition of Raku language and file associations
 - Icon for Raku files
 - Syntax Highlighting (thanks to https://github.com/Raku/atom-language-perl6)
-- Snippets for simple loops and grammars 
+- Snippets for simple loops and grammars
 - Language Server providing:
   - Syntax checking and warnings
   - Outline view and breadcrumbs
   - Autocompletion and go-to definition on local variables, grammars, and classes
+  - Document formatting with basic indentation and whitespace rules
 
 
 Install the vscode extension from: https://marketplace.visualstudio.com/items?itemName=bscan.raku-navigator 
@@ -36,3 +37,5 @@ The word separators are important for highlighting function names that have a hy
 
 - raku.rakuPath specifies the location of your raku install. Defaults to "raku"
 - raku.includePaths adds locations to the path via a -I command line switch
+- raku.syntaxCheckEnabled enables or disables syntax checking. Defaults to true
+- raku.formattingEnabled enables or disables document formatting. Defaults to true

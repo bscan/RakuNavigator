@@ -113,11 +113,11 @@ export function lookupSymbol(rakuDoc: RakuDocument, modMap: Map<string, string>,
             const best = findRecent(found, line);
             // Debug: local match found
             // Note: No settings at this call site, so rely on global logging default
-            nLog(`lookupSymbol: local match for ${symbol} at line ${best.line}`, { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true });
+            nLog(`lookupSymbol: local match for ${symbol} at line ${best.line}`, { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true, formattingEnabled: true });
             return [best];
         }
         // Subroutines/methods and other non-sigil symbols: return all matches (e.g., multi subs)
-        nLog(`lookupSymbol: local multi matches for ${symbol} -> ${found.length} symbol(s)`, { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true });
+        nLog(`lookupSymbol: local multi matches for ${symbol} -> ${found.length} symbol(s)`, { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true, formattingEnabled: true });
         return found;
     }
 
@@ -134,7 +134,7 @@ export function lookupSymbol(rakuDoc: RakuDocument, modMap: Map<string, string>,
             lineEnd: 0,
             source: ElemSource.modHunter,
         };
-    nLog(`lookupSymbol: module map match for ${symbol}`, { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true });
+    nLog(`lookupSymbol: module map match for ${symbol}`, { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true, formattingEnabled: true });
     return [modElem];
     }
 
@@ -166,7 +166,7 @@ export function lookupSymbol(rakuDoc: RakuDocument, modMap: Map<string, string>,
     // Fall back to workspace token/rule index if nothing found locally
     const ws = workspaceIndex.findByName(symbol);
     if (ws.length > 0) {
-        nLog(`lookupSymbol: workspace index match for ${symbol} -> ${ws.length} symbol(s)`, { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true });
+        nLog(`lookupSymbol: workspace index match for ${symbol} -> ${ws.length} symbol(s)`, { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true, formattingEnabled: true });
         return ws;
     }
 
