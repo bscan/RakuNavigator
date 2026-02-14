@@ -87,6 +87,66 @@
           "default": true,
           "description": "Log to stdout from the navigator. Viewable in the Raku Navigator LSP log"
         },
+        "raku.formatting.enable": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enable code formatting for Raku files"
+        },
+        "raku.formatting.indentSize": {
+          "scope": "resource",
+          "type": "number",
+          "default": 4,
+          "description": "Number of spaces per indentation level (only used if editor.tabSize is not set)"
+        },
+        "raku.formatting.trimTrailingWhitespace": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Remove trailing whitespace from lines"
+        },
+        "raku.formatting.insertFinalNewline": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Ensure file ends with a newline"
+        },
+        "raku.formatting.spaceAfterComma": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Add space after commas in lists and function calls"
+        },
+        "raku.formatting.noSpaceBeforeSemicolon": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Remove space before semicolons"
+        },
+        "raku.formatting.spaceAfterKeywords": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Add space after control keywords (if, for, while, etc.)"
+        },
+        "raku.formatting.spaceBeforeBrace": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Ensure space before opening brace in declarations"
+        },
+        "raku.formatting.braceOnSameLine": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Move opening brace to same line as declaration (class, method, sub, etc.)"
+        },
+        "raku.formatting.cuddledElse": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Place else/elsif keywords on same line as closing brace"
+        },
         "raku.trace.server": {
           "scope": "window",
           "type": "string",

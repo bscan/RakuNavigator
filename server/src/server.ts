@@ -34,6 +34,7 @@ import { getCompletions, getCompletionDoc } from './completion';
 import { getSignature } from './signature';
 import { parseDocument } from "./parser";
 import { workspaceIndex, resetWorkspaceIndex } from './workspaceIndex';
+import { formatDocument, formatRange } from './formatting';
 
 var LRU = require("lru-cache");
 
@@ -76,7 +77,9 @@ connection.onInitialize((params: InitializeParams) => {
             },
             documentSymbolProvider: true, // Outline view and breadcrumbs
             definitionProvider: true, // goto definition
-            hoverProvider: true, 
+            hoverProvider: true,
+            documentFormattingProvider: true, // Format Document
+            documentRangeFormattingProvider: true, // Format Selection
         }
     };
     if (hasWorkspaceFolderCapability) {
@@ -100,8 +103,8 @@ connection.onInitialized(() => {
         resetWorkspaceIndex();
     getWorkspaceFoldersSafe().then(async (folders) => {
             const anyDoc = documents.all()[0];
-            const settings = anyDoc ? await getDocumentSettings(anyDoc.uri) : undefined;
-            nLog('Workspace folders changed; rebuilding token index', settings || globalSettings);
+            const settings = anyDoc ? await getDocumentSettings(anyDoc.uri) : globalSettings;
+            nLog('Workspace folders changed; rebuilding token index', settings);
             await workspaceIndex.build(folders, settings);
         });
         });
@@ -110,8 +113,8 @@ connection.onInitialized(() => {
     // Build initial workspace index and register to file change notifications
     getWorkspaceFoldersSafe().then(async (folders) => {
         const anyDoc = documents.all()[0];
-        const settings = anyDoc ? await getDocumentSettings(anyDoc.uri) : undefined;
-        nLog('Initial workspace token index build starting', settings || globalSettings);
+        const settings = anyDoc ? await getDocumentSettings(anyDoc.uri) : globalSettings;
+        nLog('Initial workspace token index build starting', settings);
         await workspaceIndex.build(folders, settings);
     });
 });
@@ -125,6 +128,10 @@ const defaultSettings: NavigatorSettings = {
     includePaths: [],
     logging: false, // Get logging from vscode, but turn it off elsewhere. Sublime Text seems to struggle with it on Windows
     syntaxCheckEnabled: true,
+    formatting: {
+        enable: true,
+        indentSize: 4,
+    },
 };
 
 let globalSettings: NavigatorSettings = defaultSettings;
@@ -388,6 +395,22 @@ connection.onSignatureHelp(async (params) => {
     if (!document || !rakuDoc) return;
     const signature = await getSignature(params, rakuDoc, document);
     return signature;
+});
+
+connection.onDocumentFormatting(async (params) => {
+    const document = documents.get(params.textDocument.uri);
+    if (!document) return [];
+    const settings = await getDocumentSettings(document.uri);
+    if (settings.formatting?.enable === false) return [];
+    return await formatDocument(document, params.options, settings);
+});
+
+connection.onDocumentRangeFormatting(async (params) => {
+    const document = documents.get(params.textDocument.uri);
+    if (!document) return [];
+    const settings = await getDocumentSettings(document.uri);
+    if (settings.formatting?.enable === false) return [];
+    return await formatRange(document, params.range, params.options, settings);
 });
 
 

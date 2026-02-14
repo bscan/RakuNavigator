@@ -17,7 +17,7 @@ export class WorkspaceIndex {
     // file uri -> list of names defined in that file (for fast invalidation)
     private fileToNames: Map<string, string[]> = new Map();
 
-    async build(workspaceFolders: WorkspaceFolder[] | null | undefined, settings?: NavigatorSettings): Promise<void> {
+    async build(workspaceFolders: WorkspaceFolder[] | null | undefined, settings: NavigatorSettings): Promise<void> {
         if (!workspaceFolders || workspaceFolders.length === 0) return;
         const uris = new Set<string>();
         let filesBudget = MAX_INDEX_FILES;
@@ -31,25 +31,25 @@ export class WorkspaceIndex {
             filesBudget = MAX_INDEX_FILES - uris.size;
             if (filesBudget <= 0) break;
         }
-        nLog(`WorkspaceIndex: building for ${uris.size} files`, settings || { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true });
+        nLog(`WorkspaceIndex: building for ${uris.size} files`, settings);
         // Index sequentially to limit CPU/memory spikes
         let totalAdded = 0;
         for (const uri of uris) {
             if (totalAdded >= MAX_INDEX_SYMBOLS) {
-                nLog(`WorkspaceIndex: symbol limit (${MAX_INDEX_SYMBOLS}) reached; stopping build early`, settings || { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true });
+                nLog(`WorkspaceIndex: symbol limit (${MAX_INDEX_SYMBOLS}) reached; stopping build early`, settings);
                 break;
             }
             totalAdded += await this.reindexFile(uri, settings);
         }
-        nLog(`WorkspaceIndex: build complete. Total symbols indexed: ${totalAdded}`, settings || { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true });
+        nLog(`WorkspaceIndex: build complete. Total symbols indexed: ${totalAdded}`, settings);
     }
 
-    async reindexFile(uri: string, settings?: NavigatorSettings): Promise<number> {
+    async reindexFile(uri: string, settings: NavigatorSettings): Promise<number> {
         // remove old entries first to avoid duplicates
         this.removeFile(uri, settings);
         const rdoc = await parseFromUri(uri, ParseType.workspaceIndex);
         if (!rdoc) {
-            nLog(`WorkspaceIndex: parseFromUri returned no document for ${uri}`, settings || { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true });
+            nLog(`WorkspaceIndex: parseFromUri returned no document for ${uri}`, settings);
             return 0;
         }
 
@@ -100,11 +100,11 @@ export class WorkspaceIndex {
             }
         });
         if (namesForFileSet.size) this.fileToNames.set(uri, Array.from(namesForFileSet));
-        nLog(`WorkspaceIndex: reindexed ${uri} — ${added} symbols`, settings || { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true });
+        nLog(`WorkspaceIndex: reindexed ${uri} — ${added} symbols`, settings);
         return added;
     }
 
-    removeFile(uri: string, settings?: NavigatorSettings): void {
+    removeFile(uri: string, settings: NavigatorSettings): void {
         const names = this.fileToNames.get(uri);
         if (!names) return;
         let removed = 0;
@@ -120,7 +120,7 @@ export class WorkspaceIndex {
             removed++;
         }
         this.fileToNames.delete(uri);
-        nLog(`WorkspaceIndex: removed ${uri} — cleared ${removed} names`, settings || { rakuPath: '', includePaths: [], logging: true, syntaxCheckEnabled: true });
+        nLog(`WorkspaceIndex: removed ${uri} — cleared ${removed} names`, settings);
     }
 
     findByName(name: string): RakuElem[] {

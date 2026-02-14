@@ -12,6 +12,18 @@ export interface NavigatorSettings {
     includePaths: string[];
     logging: boolean;
     syntaxCheckEnabled: boolean;
+    formatting?: {
+        enable: boolean;
+        indentSize: number;
+        trimTrailingWhitespace?: boolean;
+        insertFinalNewline?: boolean;
+        spaceAfterComma?: boolean;
+        noSpaceBeforeSemicolon?: boolean;
+        spaceAfterKeywords?: boolean;
+        spaceBeforeBrace?: boolean;
+        braceOnSameLine?: boolean;
+        cuddledElse?: boolean;
+    };
 }
 
 export interface CompilationResults {

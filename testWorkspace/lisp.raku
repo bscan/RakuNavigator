@@ -34,7 +34,7 @@ class Literal {
 
 grammar Lisp::Grammar  {
     rule TOP {
-       ^^ <statement>+ $$
+        ^^ <statement>+ $$
     }
 
     rule statement {
@@ -153,11 +153,11 @@ class Env {
     method resolve($key) is rw {
 
         if %.scope{$key}:exists {
-             %.scope{$key}
+            %.scope{$key}
         }
         else {
             fail "unbound symbol '$key'" unless $.outer;
-             $.outer.resolve($key);
+            $.outer.resolve($key);
         }
     }
     method merge(*@env) {
@@ -213,11 +213,11 @@ class Env {
             when 'lambda' | 'λ' {
                 my ($vars, $exp) = @x;
                 Func.new( code => -> *@argv {
-                    my %x = flat ($vars.list Z @argv);
-                    my $new-env = Env.new(scope => %x , outer => self);
-                    $new-env.evaluate-tokens($exp)
-                },
-                desc => "closure:arity:{$vars.elems}" );
+                        my %x = flat ($vars.list Z @argv);
+                        my $new-env = Env.new(scope => %x , outer => self);
+                        $new-env.evaluate-tokens($exp)
+                    },
+                    desc => "closure:arity:{$vars.elems}" );
             }
             when 'begin'   {
                 my $val;
@@ -248,8 +248,8 @@ class Env {
     multi method add-builtin(*@x, *%x) {
         for |@x,|%x -> $p {
             $.scope{$p.key} = Func.new:
-                            code => $p.value,
-                            desc => "builtin:{$p.key}"
+            code => $p.value,
+            desc => "builtin:{$p.key}"
         }
     }
     method add-constant(*@x, *%x) {
@@ -265,54 +265,54 @@ our $*LISP-ENV = Env.new(scope => %*LISP-GLOBAL);
 
 
 $*LISP-ENV.add-constant:
-    '#t' => True,
-    '#f' => False
+'#t' => True,
+'#f' => False
 ;
 
 $*LISP-ENV.add-builtin:
-     '>'       =>-> *@a { [>] @a },
-     '<'       =>-> *@a { [<] @a },
-     '>='      =>-> *@a { [>=] @a },
-     '<='      =>-> *@a { [<=] @a },
-     '='       =>-> *@a { [==] @a },
+'>'       =>-> *@a { [>] @a },
+'<'       =>-> *@a { [<] @a },
+'>='      =>-> *@a { [>=] @a },
+'<='      =>-> *@a { [<=] @a },
+'='       =>-> *@a { [==] @a },
 ;
 
 # ariphmetic ops
 $*LISP-ENV.add-builtin:
-     '+'       =>-> *@a { [+] @a },
-     '-'       =>-> *@a { +@a > 1 ?? [-] @a !! - @a[0] },
-     '*'       =>-> *@a { [*] @a },
-     '/'       =>-> *@a { [/] @a },
-     abs       =>   &abs,
+'+'       =>-> *@a { [+] @a },
+'-'       =>-> *@a { +@a > 1 ?? [-] @a !! - @a[0] },
+'*'       =>-> *@a { [*] @a },
+'/'       =>-> *@a { [/] @a },
+abs       =>   &abs,
 ;
 
 # lisp ops
 $*LISP-ENV.add-builtin:
-     list    =>-> *@a { @a.item  },
-     length  =>->  $a { $a.elems  },
-     cons    =>-> *@a { @a.item   },
-     car     =>->  @a { @a[0]     },
-     cdr     =>->  @a { @a[1...*] },
-     append  =>-> *@a {
-         my @x =  @a[0][0..*];
-         @x.push: @a[1];
-         @x;
-     },
-     'list?'   =>-> *@a  { so @a[0] ~~ Positional },
-     'null?'   =>-> *@a  { fail "too many arguments" unless +@a == 1 ;  @a[0].elems == 0 },
+list    =>-> *@a { @a.item  },
+length  =>->  $a { $a.elems  },
+cons    =>-> *@a { @a.item   },
+car     =>->  @a { @a[0]     },
+cdr     =>->  @a { @a[1...*] },
+append  =>-> *@a {
+    my @x =  @a[0][0..*];
+    @x.push: @a[1];
+    @x;
+},
+'list?'   =>-> *@a  { so @a[0] ~~ Positional },
+'null?'   =>-> *@a  { fail "too many arguments" unless +@a == 1 ;  @a[0].elems == 0 },
 ;
 
 $*LISP-ENV.add-builtin:
-  not     => -> $a { not $a },
-  so      => -> $a { so  $a },
-  'equal?'  => -> *@a { [~~] @a },
-  'symbol?' => -> *@a {
+not     => -> $a { not $a },
+so      => -> $a { so  $a },
+'equal?'  => -> *@a { [~~] @a },
+'symbol?' => -> *@a {
     fail "NYI"
-  },
-  display => -> *@a {
+},
+display => -> *@a {
     say join ', ', @a.map(*.Str);
-  },
-  exit    => -> $a { exit $a };
+},
+exit    => -> $a { exit $a };
 
 
 sub eval(Str $sexp) {
@@ -347,8 +347,8 @@ sub REPL {
         try {
             my $p =  prompt(
                 $exp eq ''
-                    ?? '> '
-                    !! ('--' xx $balance) ~ '> '
+                ?? '> '
+                !! ('--' xx $balance) ~ '> '
             );
             exit unless defined $p;
             $exp ~= "$p ";
@@ -372,10 +372,10 @@ sub REPL {
 }
 
 sub MAIN(Bool :$test     = False,
-         Bool :$debug    = False,
-         Str  :$file            ,
-         Str  :$command         ,
-         ) {
+    Bool :$debug    = False,
+    Str  :$file            ,
+    Str  :$command         ,
+) {
     if $command {
         return eval $command
     }
@@ -460,7 +460,7 @@ sub TEST {
 
     {
         ok eval("(define xxx 1)") == 1 ,"define";
-         eval("(set! xxx 2)");
+        eval("(set! xxx 2)");
         ok eval("xxx") == 2, 'set!';
     }
 
@@ -483,23 +483,23 @@ sub TEST {
     ok eval("(eval '(+ 1 2 3))") == 6 , 'eval';
     ok (
         eval "(list 1 (list 2 (list 3 (list 3 5))))" ) ==
-                [["1", ["2", ["3", ["3", "5"]]]]], 'nested list';
+    [["1", ["2", ["3", ["3", "5"]]]]], 'nested list';
     ok eval(qq{ (define fib (lambda (n)  (if (< n 2)  1  (+ (fib (- n 1)) (fib (- n 2)))))) })  &&
     eval("(fib 10)") == 89, 'fib(10)';
     eval '
-         (define (sqrt x)
-           (begin
-            (define (square x) (* x x))
-            (define (average x y) (/ (+ x y) 2))
-            (define (good-enough? guess x)
-              (< (abs (- (square guess) x)) 0.001))
-            (define (improve guess)
-              (average guess (/ x guess)))
-            (define (sqrt-iter guess)
-              (if (good-enough? guess)
-                  guess
-                (sqrt-iter (improve guess))))
-            (sqrt-iter 1.0)))
+    (define (sqrt x)
+    (begin
+    (define (square x) (* x x))
+    (define (average x y) (/ (+ x y) 2))
+    (define (good-enough? guess x)
+    (< (abs (- (square guess) x)) 0.001))
+    (define (improve guess)
+    (average guess (/ x guess)))
+    (define (sqrt-iter guess)
+    (if (good-enough? guess)
+    guess
+    (sqrt-iter (improve guess))))
+    (sqrt-iter 1.0)))
     ';
     ok eval("(sqrt 4)").Int == 2, 'sqrt example';
 
