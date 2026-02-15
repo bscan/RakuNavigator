@@ -174,7 +174,7 @@ export function lookupSymbol(rakuDoc: RakuDocument, modMap: Map<string, string>,
 }
 
 
-function findRecent (found: RakuElem[], line: number){
+export function findRecent (found: RakuElem[], line: number){
     let best = found[0];
     for (var i = 0; i < found.length; i++){
         // Find the most recently declared variable.

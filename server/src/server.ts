@@ -37,6 +37,7 @@ import { getSignature } from './signature';
 import { parseDocument } from "./parser";
 import { workspaceIndex, resetWorkspaceIndex } from './workspaceIndex';
 import { formatDocument, formatRange } from './formatting';
+import { findAllReferences, prepareRename, executeRename } from './references';
 
 var LRU = require("lru-cache");
 
@@ -83,6 +84,10 @@ connection.onInitialize((params: InitializeParams) => {
             hoverProvider: true,
             documentFormattingProvider: true, // Format Document
             documentRangeFormattingProvider: true, // Format Selection
+            referencesProvider: true, // Find all references
+            renameProvider: {
+                prepareProvider: true
+            }, // Rename symbol
         }
     };
     if (hasWorkspaceFolderCapability) {
@@ -444,6 +449,45 @@ connection.onDocumentRangeFormatting(async (params) => {
     const settings = await getDocumentSettings(document.uri);
     if (settings.formatting?.enable === false) return [];
     return await formatRange(document, params.range, params.options, settings);
+});
+
+connection.onReferences(params => {
+    const document = documents.get(params.textDocument.uri);
+    const rakuDoc = navSymbols.get(params.textDocument.uri);
+    if (!document || !rakuDoc) return;
+
+    return findAllReferences(
+        params.position,
+        rakuDoc,
+        document,
+        params.context.includeDeclaration
+    );
+});
+
+connection.onPrepareRename(params => {
+    const document = documents.get(params.textDocument.uri);
+    const rakuDoc = navSymbols.get(params.textDocument.uri);
+    if (!document || !rakuDoc) return;
+
+    return prepareRename(params.position, rakuDoc, document);
+});
+
+connection.onRenameRequest(async params => {
+    // Get cached settings or fall back to globalSettings
+    const settings = documentSettings.get(params.textDocument.uri) || globalSettings;
+
+    nLog(`[RENAME] Request received for ${params.textDocument.uri} at ${params.position.line}:${params.position.character}, newName: "${params.newName}"`, settings);
+
+    const document = documents.get(params.textDocument.uri);
+    const rakuDoc = navSymbols.get(params.textDocument.uri);
+    if (!document || !rakuDoc) {
+        nLog(`[RENAME] Failed: document or rakuDoc not found`, settings);
+        return;
+    }
+
+    const result = await executeRename(params.position, params.newName, rakuDoc, document, settings);
+    nLog(`[RENAME] Result: ${result ? `${Object.keys(result.changes || {}).length} files with edits` : 'null'}`, settings);
+    return result;
 });
 
 

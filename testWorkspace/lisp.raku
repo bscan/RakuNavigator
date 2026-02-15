@@ -11,11 +11,11 @@ Inspired by L<http://www.norvig.com/lispy.html>
 Example from here: https://github.com/Raku/examples/blob/master/categories/interpreters/lisp.pl
 =end pod
 
-class Symbol {
+class TokenName {
     has $.name;
 
     method CALL-ME($x) {
-        Symbol.new(name => $x);
+        TokenName.new(name => $x);
     }
 
     method gist { "#<symbol:{$.name}>" }
@@ -90,8 +90,8 @@ class List::Actons {
         make $/.caps».values.flat».made[0]
     }
 
-    method bool:sym<true>($/)  { make Symbol(~$/) }
-    method bool:sym<false>($/) { make Symbol(~$/) }
+    method bool:sym<true>($/)  { make TokenName(~$/) }
+    method bool:sym<false>($/) { make TokenName(~$/) }
 
     method number:sym<integer>($/) { make $/.Int }
     method number:sym<float>($/) { make $/.Rat }
@@ -100,13 +100,13 @@ class List::Actons {
     method atom:sym<number>($/) { make $<number>.made }
     method atom:sym<string>($/) { make $<string>.made }
     method atom:sym<quote>($/)  { make $<quote>.made  }
-    method atom:sym<symbol>($/) { make Symbol($<symbol>.made) }
+    method atom:sym<symbol>($/) { make TokenName($<symbol>.made) }
 
     method atom($/) {
         make $/.caps».values.flat».made[0];
     }
     method quote($/) {
-        make [ Symbol('quote'), $<statement>.made.Array ];
+        make [ TokenName('quote'), $<statement>.made.Array ];
     }
 
     method symbol($/) {  make ~$/ }
@@ -146,9 +146,9 @@ class Func {
     method gist     { "#<{$.desc}>" }
 }
 
-class Env {
+class ExecutionContext {
     has       %.scope is rw;
-    has  Env  $.outer;
+    has  ExecutionContext  $.outer;
 
     method resolve($key) is rw {
 
@@ -156,7 +156,7 @@ class Env {
             %.scope{$key}
         }
         else {
-            fail "unbound symbol '$key'" unless $.outer;
+            fail "unbound Env '$key'" unless $.outer;
             $.outer.resolve($key);
         }
     }
@@ -169,7 +169,7 @@ class Env {
     multi method evaluate-tokens(Rat $x) {
         $x
     }
-    multi method evaluate-tokens(Symbol $x) {
+    multi method evaluate-tokens(TokenName $x) {
         self.resolve($x)
     }
     multi method evaluate-tokens(Positional $x) {
@@ -206,7 +206,7 @@ class Env {
                 my ($var, $exp) = @x;
                 if $var ~~ Positional {
                     $.scope{$var[0]} =
-                    self.evaluate-tokens([ Symbol('λ'), [ $var[1..*] ], $exp]);
+                    self.evaluate-tokens([ TokenName('λ'), [ $var[1..*] ], $exp]);
                 }
                 else { $.scope{$var}  =self.evaluate-tokens($exp); }
             }
@@ -214,7 +214,7 @@ class Env {
                 my ($vars, $exp) = @x;
                 Func.new( code => -> *@argv {
                         my %x = flat ($vars.list Z @argv);
-                        my $new-env = Env.new(scope => %x , outer => self);
+                        my $new-env = ExecutionContext.new(scope => %x , outer => self);
                         $new-env.evaluate-tokens($exp)
                     },
                     desc => "closure:arity:{$vars.elems}" );
@@ -261,7 +261,7 @@ class Env {
 
 our %*LISP-GLOBAL;
 
-our $*LISP-ENV = Env.new(scope => %*LISP-GLOBAL);
+our $*LISP-ENV = ExecutionContext.new(scope => %*LISP-GLOBAL);
 
 
 $*LISP-ENV.add-constant:
@@ -417,20 +417,20 @@ sub TEST {
 
     is-deeply parse-sexp('1'), 1, "parse atom (numeric)";
 
-    is-deeply parse-sexp('#f'), Symbol('#f'),  "parse atom (boolean)";
-    is-deeply parse-sexp('var'), Symbol('var'),  "parse atom (variable)";
+    is-deeply parse-sexp('#f'), TokenName('#f'),  "parse atom (boolean)";
+    is-deeply parse-sexp('var'), TokenName('var'),  "parse atom (variable)";
 
     ok parse-sexp("(1 2 3 4 5)") == ["1", "2","3","4","5"], "sexp";
     ok parse-sexp("(1 2 3 (4 5 6))")  == ["1", "2", "3", ["4", "5", "6"]], "nested sexps";
 
     {
-        my $y =  [Symbol('+'), 1, 2, 3];
+        my $y =  [TokenName('+'), 1, 2, 3];
         is-deeply parse-sexp('(+ 1 2 3)'), $y , "s-exp";
         is-deeply parse-sexp('   (+    1   2    3 )'), $y, "spaces are irrelevant";
     }
 
     {
-        my $y = [Symbol('foo'), 1, [Symbol('quote'), [1, 2, 3]]];
+        my $y = [TokenName('foo'), 1, [TokenName('quote'), [1, 2, 3]]];
         is-deeply parse-sexp("(foo 1 '(1 2 3))"),
         $y,
         "quote by symbol";
