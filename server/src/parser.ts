@@ -26,6 +26,7 @@ type ParserState = {
     line_number: number;
     var_continues: boolean;
     package_name: string;
+    package_endLine: number;
     uri: string;
     rakuDoc: RakuDocument;
     parseType: ParseType;
@@ -74,6 +75,7 @@ export async function parseDocument(textDocument: TextDocument, parseType: Parse
         stmt: "",
         line_number: 0,
         package_name: "",
+        package_endLine: -1,
         rakuDoc: rakuDoc,
         uri: textDocument.uri,
         var_continues: false,
@@ -83,6 +85,7 @@ export async function parseDocument(textDocument: TextDocument, parseType: Parse
 
     for (state.line_number = 0; state.line_number < state.codeArray.length; state.line_number++) {
         state.stmt = state.codeArray[state.line_number];
+        syncPackageScope(state);
         // Nothing left? Never mind.
         if (!state.stmt) continue;
 
@@ -155,33 +158,39 @@ function localVars(state: ParserState): boolean {
 function packages(state: ParserState): boolean {
     // This is a package declaration if the line starts with package
     let match;
+    const enclosingPackage = state.package_name;
 
     if ((match = state.stmt.match(/^package\s+([\w:]+)/))) {
         // Get name of the package
         state.package_name = match[1];
         const endLine = PackageEndLine(state);
-        MakeElem(state.package_name, RakuSymbolKind.Package, "", state, endLine);
+        state.package_endLine = endLine;
+        MakeElem(state.package_name, RakuSymbolKind.Package, "", state, endLine, [], enclosingPackage);
 
 	} else if ((match = state.stmt.match(/^(?:(?:my|our|unit) )?class\s+((?:[\w\-]|::)+)/))) {
         let class_name = match[1];
         state.package_name = class_name;
         const endLine = PackageEndLine(state);
-        MakeElem(class_name, RakuSymbolKind.Class, "", state, endLine);
+        state.package_endLine = endLine;
+        MakeElem(class_name, RakuSymbolKind.Class, "", state, endLine, [], enclosingPackage);
     } else if ((match = state.stmt.match(/^(?:(?:my|our|unit) )?(?:proto )?role\s+([\w\-:<>]+)/))) {
         const roleName = match[1];
-        // state.package_name = roleName; # Being cautious against changing the package name
-        const endLine = SubEndLine(state);
-        MakeElem(roleName, RakuSymbolKind.Role, "", state, endLine);
+        state.package_name = roleName;
+        const endLine = PackageEndLine(state);
+        state.package_endLine = endLine;
+        MakeElem(roleName, RakuSymbolKind.Role, "", state, endLine, [], enclosingPackage);
     } else if ((match = state.stmt.match(/^(?:my )?grammar\s+((?:[\w\-]|::)+)/))) {
         const roleName = match[1];
-        // state.package_name = roleName; # Being cautious against changing the package name
-        const endLine = SubEndLine(state);
-        MakeElem(roleName, RakuSymbolKind.Grammar, "", state, endLine);
+        state.package_name = roleName;
+        const endLine = PackageEndLine(state);
+        state.package_endLine = endLine;
+        MakeElem(roleName, RakuSymbolKind.Grammar, "", state, endLine, [], enclosingPackage);
     } else if ((match = state.stmt.match(/^(?:unit )?module\s+((?:[\w\-]|::)+)/))) {
         const roleName = match[1];
-        state.package_name = roleName; // Being cautious against changing the package name
+        state.package_name = roleName;
         const endLine = PackageEndLine(state);
-        MakeElem(roleName, RakuSymbolKind.LocalModule, "", state, endLine);
+        state.package_endLine = endLine;
+        MakeElem(roleName, RakuSymbolKind.LocalModule, "", state, endLine, [], enclosingPackage);
     } else {
         return false;
     }
@@ -189,17 +198,22 @@ function packages(state: ParserState): boolean {
     return true;
 }
 
+function syncPackageScope(state: ParserState): void {
+    if (state.package_endLine >= 0 && state.line_number > state.package_endLine) {
+        state.package_name = "";
+        state.package_endLine = -1;
+    }
+}
+
 function tokens(state: ParserState): boolean {
 	let match;
 
 	if ((match = state.stmt.match(/^(?:my )?token\s+([\w\-]+)(:[\w\-<>]+)?/))) {
-        // Get name of the package
-        state.package_name = match[1];
         const endLine = PackageEndLine(state);
-        MakeElem(state.package_name, RakuSymbolKind.Token, "", state, endLine);
+		const tokenName = match[1];
+    MakeElem(tokenName, RakuSymbolKind.Token, "", state, endLine);
 	} else if ((match = state.stmt.match(/^(?:my )?rule\s+([\w\-]+)(:[\w\-<>]+)?/))) {
         const roleName = match[1];
-        // state.package_name = roleName; # Being cautious against changing the package name
         const endLine = SubEndLine(state);
         MakeElem(roleName, RakuSymbolKind.Rule, "", state, endLine);
     } else {
@@ -359,6 +373,7 @@ async function cleanCode(textDocument: TextDocument, rakuDoc: RakuDocument, pars
         stmt: "",
         line_number: 0,
         package_name: "",
+        package_endLine: -1,
         rakuDoc: rakuDoc,
         uri: textDocument.uri,
         var_continues: false,
@@ -384,7 +399,15 @@ async function cleanCode(textDocument: TextDocument, rakuDoc: RakuDocument, pars
     return codeClean;
 }
 
-function MakeElem(name: string, type: RakuSymbolKind | TagKind, typeDetail: string, state: ParserState, lineEnd: number = 0, signature: string[] = []): void {
+function MakeElem(
+    name: string,
+    type: RakuSymbolKind | TagKind,
+    typeDetail: string,
+    state: ParserState,
+    lineEnd: number = 0,
+    signature: string[] = [],
+    enclosingPackage: string | null = null
+): void {
     if (!name) return; // Don't store empty names (shouldn't happen)
 
     if (lineEnd == 0) {
@@ -402,7 +425,7 @@ function MakeElem(name: string, type: RakuSymbolKind | TagKind, typeDetail: stri
         name: name,
         type: type,
         uri: state.uri,
-        package: state.package_name,
+        package: enclosingPackage === null ? state.package_name : enclosingPackage,
         line: state.line_number,
         lineEnd: lineEnd,
         source: ElemSource.parser,
@@ -463,9 +486,9 @@ function PackageEndLine(state: ParserState) {
     }
 
     let start_line = state.line_number;
-    if (state.codeArray[start_line].match(/(class|package)[^#]+;/)) {
+    if (state.codeArray[start_line].match(/(class|package|module)[^#]+;/)) {
         // Single line package definition.
-        if (state.codeArray[start_line].match(/{.*(class|package)/)) {
+        if (state.codeArray[start_line].match(/{.*(class|package|module)/)) {
             // Will need to hunt for the end
         } else if (start_line > 0 && state.codeArray[start_line - 1].match(/\{[^}]*$/)) {
             start_line -= 1;
@@ -503,7 +526,7 @@ function PackageEndLine(state: ParserState) {
     for (let i = start_line + 1; i < state.codeArray.length; i++) {
         // TODO: update with class inheritance / version numbers, etc
         // Although should we do with nested packages/classes? (e.g. Pack A -> Pack B {} -> A)
-        if (state.codeArray[i].match(/^\s*(class|package)\s+([\w:]+)/)) {
+        if (state.codeArray[i].match(/^\s*(class|package|module)\s+([\w:]+)/)) {
             return i - 1;
         }
     }

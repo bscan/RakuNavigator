@@ -1,15 +1,36 @@
 import {
     SymbolInformation,
-    Range,
     SymbolKind,
-    Location,
-    WorkspaceSymbolParams
+    Location
 } from 'vscode-languageserver/node';
 import {ParseType,  RakuDocument, RakuElem, RakuSymbolKind } from "./types";
 
 import { parseDocument } from "./parser";
 
 import { TextDocument } from "vscode-languageserver-textdocument";
+
+export function mapRakuSymbolKind(kind: RakuSymbolKind): SymbolKind | null {
+    if (kind == RakuSymbolKind.LocalSub) {
+        return SymbolKind.Function;
+    } else if (kind == RakuSymbolKind.LocalMethod) {
+        return SymbolKind.Method;
+    } else if (kind == RakuSymbolKind.Class) {
+        return SymbolKind.Class;
+    } else if (kind == RakuSymbolKind.Role) {
+        return SymbolKind.Interface;
+    } else if (kind == RakuSymbolKind.Field) {
+        return SymbolKind.Field;
+    } else if (kind == RakuSymbolKind.Grammar) {
+        return SymbolKind.Class;
+    } else if (kind == RakuSymbolKind.Token) {
+        return SymbolKind.TypeParameter;
+    } else if (kind == RakuSymbolKind.Rule) {
+        return SymbolKind.Operator;
+    } else if (kind == RakuSymbolKind.LocalModule) {
+        return SymbolKind.Class;
+    }
+    return null;
+}
 
 
 export async function getSymbols (textDocument: TextDocument, uri: string): Promise<SymbolInformation[]> {
@@ -20,28 +41,8 @@ export async function getSymbols (textDocument: TextDocument, uri: string): Prom
     RakuDoc.elems?.forEach((elements: RakuElem[], elemName: string) => {
         
         elements.forEach(element => {
-            let kind: SymbolKind;
-            if (element.type == RakuSymbolKind.LocalSub){
-                kind = SymbolKind.Function;
-            } else if (element.type == RakuSymbolKind.LocalMethod){
-                kind = SymbolKind.Method;
-            } else if (element.type == RakuSymbolKind.Class){
-                kind = SymbolKind.Class;
-            } else if (element.type == RakuSymbolKind.Role){
-                kind = SymbolKind.Interface;
-            } else if (element.type == RakuSymbolKind.Field){
-                kind = SymbolKind.Field;
-            } else if (element.type == RakuSymbolKind.Grammar){
-                kind = SymbolKind.Class;
-            } else if (element.type == RakuSymbolKind.Token){
-                kind = SymbolKind.TypeParameter;
-            } else if (element.type == RakuSymbolKind.Rule){
-                kind = SymbolKind.Operator;
-            } else if (element.type == RakuSymbolKind.LocalModule){
-                kind = SymbolKind.Class;
-            }else {
-                return;
-            }
+            const kind = mapRakuSymbolKind(element.type as RakuSymbolKind);
+            if (kind === null) return;
             const location: Location = {
                 range: {
                     start: { line: element.line, character: 0 },

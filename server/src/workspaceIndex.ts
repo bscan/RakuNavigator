@@ -127,6 +127,20 @@ export class WorkspaceIndex {
         return this.symbolsByName.get(name) || [];
     }
 
+    findByQuery(query: string, maxResults: number = 1000): Array<{ name: string; elem: RakuElem }> {
+        const trimmed = query.trim();
+        const needle = trimmed.toLowerCase();
+        const matches: Array<{ name: string; elem: RakuElem }> = [];
+        for (const [name, elems] of this.symbolsByName.entries()) {
+            if (trimmed && !name.toLowerCase().includes(needle)) continue;
+            for (const elem of elems) {
+                matches.push({ name, elem });
+                if (matches.length >= maxResults) return matches;
+            }
+        }
+        return matches;
+    }
+
     getLocations(name: string): Location[] {
         const elems = this.findByName(name);
         return elems.map(e => ({

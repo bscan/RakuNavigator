@@ -13,7 +13,9 @@ import {
     WorkspaceFolder,
     CompletionItem,
     CompletionList,
-	TextDocumentPositionParams,
+    TextDocumentPositionParams,
+    SymbolInformation,
+    WorkspaceSymbolParams,
 } from 'vscode-languageserver/node';
 
 import {
@@ -25,10 +27,10 @@ import {
 
 import Uri from 'vscode-uri';
 import { getDefinition, getAvailableMods } from "./navigation";
-import { NavigatorSettings, RakuDocument, ParseType, RakuElem } from "./types";
+import { NavigatorSettings, RakuDocument, ParseType, RakuElem, RakuSymbolKind } from "./types";
 import { rakucompile } from "./diagnostics";
 import { nLog, getSymbol } from './utils';
-import { getSymbols } from "./symbols";
+import { getSymbols, mapRakuSymbolKind } from "./symbols";
 import { getHover } from "./hover";
 import { getCompletions, getCompletionDoc } from './completion';
 import { getSignature } from './signature';
@@ -76,6 +78,7 @@ connection.onInitialize((params: InitializeParams) => {
                 retriggerCharacters: [',']
             },
             documentSymbolProvider: true, // Outline view and breadcrumbs
+            workspaceSymbolProvider: true, // Workspace symbol search
             definitionProvider: true, // goto definition
             hoverProvider: true,
             documentFormattingProvider: true, // Format Document
@@ -387,6 +390,36 @@ connection.onDocumentSymbol(async (params) => {
     // We might  need to async wait for the document to be processed, but I suspect the order is fine
     if (!document) return;
     return getSymbols(document, params.textDocument.uri);
+});
+
+connection.onWorkspaceSymbol(async (params: WorkspaceSymbolParams): Promise<SymbolInformation[]> => {
+    const query = (params.query || '').trim();
+    const matches = workspaceIndex.findByQuery(query, 1000);
+    const results: SymbolInformation[] = [];
+    const seen = new Set<string>();
+
+    for (const match of matches) {
+        const kind = mapRakuSymbolKind(match.elem.type as RakuSymbolKind);
+        if (kind === null) continue;
+        const lineEnd = typeof match.elem.lineEnd === 'number' ? match.elem.lineEnd : match.elem.line;
+        const key = `${match.name}:${match.elem.uri}:${match.elem.line}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        results.push({
+            name: match.name,
+            kind: kind,
+            location: {
+                uri: match.elem.uri,
+                range: {
+                    start: { line: match.elem.line, character: 0 },
+                    end: { line: lineEnd, character: 100 }
+                }
+            },
+            containerName: match.elem.package || undefined
+        });
+    }
+
+    return results;
 });
 
 connection.onSignatureHelp(async (params) => {
