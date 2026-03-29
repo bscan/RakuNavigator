@@ -38,6 +38,7 @@ interface LineInfo {
     isEmpty: boolean;
     isComment: boolean;
     isString: boolean;
+    preserveLeadingWhitespace: boolean;
     isPod: boolean;
     indentDelta: { before: number; after: number }; // Change in indent level
     tokens: vsctm.IToken[]; // Store tokens for additional formatting rules
@@ -126,6 +127,7 @@ async function analyzeLine(
     // Check if this entire line is a comment or string
     let isComment = false;
     let isString = false;
+    let preserveLeadingWhitespace = false;
     let isPod = false;
     
     if (result.tokens.length > 0) {
@@ -141,9 +143,21 @@ async function analyzeLine(
             isPod = firstContentToken.scopes.some(scope => scope.includes("pod") || scope.includes("comment.block.documentation"));
             isString = firstContentToken.scopes.some(scope => scope.startsWith("string"));
         }
+
+        // Check if this line starts inside a multi-line string or heredoc context
+        // by examining the grammar state at position 0 (carried from previous line).
+        // A line starting with a NEW string literal (e.g. '/path'.IO) has
+        // punctuation.definition.string.begin at position 0, so it is excluded.
+        const firstToken = result.tokens[0];
+        const startsInsideString = firstToken.scopes.some(scope => scope.startsWith("string")) &&
+            !firstToken.scopes.some(scope => scope.includes("punctuation.definition.string.begin"));
+        const startsInsideHeredoc = firstToken.scopes.some(scope => scope.includes("meta.heredoc"));
+        preserveLeadingWhitespace = startsInsideString || startsInsideHeredoc;
     }
     
-    // Analyze indent changes based on brackets
+    // Analyze indent changes based on brackets.
+    // String continuation lines still need bracket tracking so indent state
+    // stays correct for the code that follows them.
     const indentDelta = isEmpty || isComment ? { before: 0, after: 0 } : analyzeIndentChange(result.tokens, lineText);
     
     const lineInfo: LineInfo = {
@@ -154,6 +168,7 @@ async function analyzeLine(
         isEmpty,
         isComment,
         isString,
+        preserveLeadingWhitespace,
         isPod,
         indentDelta,
         tokens: result.tokens,
@@ -178,7 +193,16 @@ function calculateIndents(lines: LineInfo[], baseIndent: number = 0): number[] {
         
         // For POD blocks, preserve their indentation
         if (line.isPod) {
-            indents.push(currentIndent); // Preserve, but this will be skipped in edit generation
+            indents.push(currentIndent);
+            continue;
+        }
+        
+        // For string continuation lines, preserve whitespace but still track
+        // bracket state so subsequent code gets the right indent level.
+        if (line.preserveLeadingWhitespace) {
+            currentIndent = Math.max(0, currentIndent + line.indentDelta.before);
+            indents.push(currentIndent);
+            currentIndent = Math.max(0, currentIndent + line.indentDelta.after);
             continue;
         }
         
@@ -603,7 +627,7 @@ async function formatLines(
         const isMethodContinuation = trimmedText.startsWith('.');
         
         // Skip indentation for method continuation lines (preserve user formatting)
-        if (!isNowEmpty && !line.isPod && !isMethodContinuation) {
+        if (!isNowEmpty && !line.isPod && !line.preserveLeadingWhitespace && !isMethodContinuation) {
             const expectedIndent = expectedIndents[i];
             const expectedWhitespace = generateIndent(expectedIndent, options, config);
             const leadingMatch = finalText.match(/^(\s*)/);

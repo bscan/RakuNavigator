@@ -11,6 +11,12 @@ function makeDoc(text: string) {
   return TextDocument.create('file:///test/app.raku', 'raku', 1, text);
 }
 
+async function formatText(text: string) {
+  const doc = makeDoc(text);
+  const edits = await formatDocument(doc, defaultOptions, defaultSettings);
+  return TextDocument.applyEdits(doc, edits);
+}
+
 const defaultOptions: FormattingOptions = {
   tabSize: 4,
   insertSpaces: true,
@@ -314,6 +320,207 @@ describe('formatting', () => {
       );
       
       assert.ok(!hasIndentChange, 'expected method continuation lines to preserve indentation');
+    });
+
+    it('preserves multi-line double-quoted string indentation', async () => {
+      const code = [
+        'sub test {',
+        '    my $text = "Line one',
+        '  Line two',
+        'Line three";',
+        '}',
+      ].join('\n');
+
+      const formatted = await formatText(code);
+
+      assert.equal(formatted, `${code}\n`);
+    });
+
+    it('preserves multi-line single-quoted string indentation', async () => {
+      const code = [
+        'sub test {',
+        "    my $text = 'Line one",
+        '  Line two',
+        "Line three';",
+        '}',
+      ].join('\n');
+
+      const formatted = await formatText(code);
+
+      assert.equal(formatted, `${code}\n`);
+    });
+
+    it('preserves heredoc body and closing delimiter indentation', async () => {
+      const code = [
+        'sub test {',
+        '    my $text = q:to/END/;',
+        'Line one',
+        '  Line two',
+        'END',
+        '}',
+      ].join('\n');
+
+      const formatted = await formatText(code);
+
+      assert.equal(formatted, `${code}\n`);
+    });
+
+    it('indents lines that start with a string literal', async () => {
+      const code = [
+        'sub test {',
+        "'/mnt/etc/hosts'.IO.spurt(\"foo\");",
+        '}',
+      ].join('\n');
+
+      const formatted = await formatText(code);
+      const lines = formatted.split('\n');
+
+      assert.equal(lines[1], "    '/mnt/etc/hosts'.IO.spurt(\"foo\");");
+    });
+
+    it('tracks brackets across multi-line string boundaries', async () => {
+      const code = [
+        'if True {',
+        '    \'/mnt/etc/hosts\'.IO.spurt("first line',
+        'second line");',
+        '    print "foo";',
+        '}',
+      ].join('\n');
+
+      const formatted = await formatText(code);
+      const lines = formatted.split('\n');
+
+      // The string continuation line should be preserved as-is
+      assert.equal(lines[2], 'second line");');
+      // The line after should be at indent level 1, not 2
+      assert.equal(lines[3], '    print "foo";');
+      // The closing brace should be at indent level 0
+      assert.equal(lines[4], '}');
+    });
+
+    it('removes trailing whitespace', async () => {
+      const code = 'my $x = 5;   ';
+
+      const formatted = await formatText(code);
+
+      assert.equal(formatted, 'my $x = 5;\n');
+    });
+
+    it('inserts final newline', async () => {
+      const code = 'my $x = 5;';
+
+      const formatted = await formatText(code);
+
+      assert.ok(formatted.endsWith('\n'), 'expected final newline');
+    });
+
+    it('adds space before brace in declaration', async () => {
+      const code = 'sub test{ say "hi" }';
+
+      const formatted = await formatText(code);
+
+      assert.ok(formatted.includes('sub test {'), 'expected space before brace');
+    });
+
+    it('fixes deeply nested indentation', async () => {
+      const code = [
+        'sub outer {',
+        'if True {',
+        'for 1..3 -> $i {',
+        'say $i;',
+        '}',
+        '}',
+        '}',
+      ].join('\n');
+
+      const formatted = await formatText(code);
+      const lines = formatted.split('\n');
+
+      assert.equal(lines[1], '    if True {');
+      assert.equal(lines[2], '        for 1..3 -> $i {');
+      assert.equal(lines[3], '            say $i;');
+      assert.equal(lines[4], '        }');
+      assert.equal(lines[5], '    }');
+      assert.equal(lines[6], '}');
+    });
+
+    it('does not reformat commas and semicolons inside strings', async () => {
+      const code = [
+        'sub test {',
+        '    my $s1 = "comma,separated,values";',
+        '    my $s2 = "semicolon ; stays";',
+        '}',
+      ].join('\n');
+
+      const formatted = await formatText(code);
+
+      assert.equal(formatted, `${code}\n`);
+    });
+
+    it('preserves one-liner method formatting', async () => {
+      const code = [
+        'class Foo {',
+        '    has $.name;',
+        '    method gist { "#<{$.name}>" }',
+        '    method Str  { $.name }',
+        '}',
+      ].join('\n');
+
+      const formatted = await formatText(code);
+
+      assert.equal(formatted, `${code}\n`);
+    });
+
+    it('keeps brace on own line after multi-line signature', async () => {
+      const code = [
+        'sub complex-signature(',
+        '    $param1,',
+        '    $param2,',
+        '    :$named1',
+        ') {',
+        '    say "body";',
+        '}',
+      ].join('\n');
+
+      const formatted = await formatText(code);
+
+      assert.equal(formatted, `${code}\n`);
+    });
+
+    it('resumes correct indentation after heredoc', async () => {
+      const code = [
+        'sub test {',
+        '    my $text = q:to/END/;',
+        'Line one',
+        '  Line two',
+        'END',
+        '    say "after heredoc";',
+        '    if True {',
+        '        say "nested";',
+        '    }',
+        '}',
+      ].join('\n');
+
+      const formatted = await formatText(code);
+
+      assert.equal(formatted, `${code}\n`);
+    });
+
+    it('preserves closing quote on its own line', async () => {
+      const code = [
+        'sub test {',
+        '    my $text = "',
+        'content here',
+        '";',
+        '    say "next";',
+        '}',
+      ].join('\n');
+
+      const formatted = await formatText(code);
+      const lines = formatted.split('\n');
+
+      assert.equal(lines[2], 'content here');
+      assert.equal(lines[4], '    say "next";');
     });
   });
 });
