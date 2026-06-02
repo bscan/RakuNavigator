@@ -31,7 +31,7 @@ const vscodeOnigurumaLib = oniguruma.loadWASM(wasmBin).then(() => {
 const registry = new vsctm.Registry({
     onigLib: vscodeOnigurumaLib,
     loadGrammar: async (scopeName) => {
-        const grammarpath = path.join(__dirname, './../raku.tmLanguage.json');
+        const grammarpath = path.join(__dirname, './../raku.merged.tmLanguage.json');
         const grammar = await readFileSync(grammarpath, 'utf8');
         return vsctm.parseRawGrammar(grammar, grammarpath);
     },

@@ -50,7 +50,7 @@
       {
         "language": "raku",
         "scopeName": "source.raku",
-        "path": "./server/raku.tmLanguage.json"
+        "path": "./server/raku.merged.tmLanguage.json"
       }
     ],
     "snippets": [

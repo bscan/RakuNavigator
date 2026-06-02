@@ -120,10 +120,10 @@ function localVars(state: ParserState): boolean {
     // line, or if this line starts with my or local
     let match;
     if (state.var_continues || (match = state.stmt.match(/^(?:my|our|let|state)\b/))) {
-        // The declaration continues unless there's a semicolon, signature end, or sub start. 
+        // The declaration continues unless there's a semicolon, signature end, or sub start.
         // This can get tripped up with comments, but it's not a huge deal. subroutines are more important
         state.var_continues = !state.stmt.match(/[\)\=\}\{;]/);
-        
+
         let mod_stmt = state.stmt;
         // Remove my or local from statement, if present
         mod_stmt = mod_stmt.replace(/^(my|our|let|state)\s+/, "");
@@ -550,7 +550,7 @@ const vscodeOnigurumaLib = oniguruma.loadWASM(wasmBin).then(() => {
 const registry = new vsctm.Registry({
     onigLib: vscodeOnigurumaLib,
     loadGrammar: async (scopeName) => {
-        const grammarpath = path.join(__dirname, "./../raku.tmLanguage.json");
+        const grammarpath = path.join(__dirname, "./../raku.merged.tmLanguage.json");
         const grammar = await fs.promises.readFile(grammarpath, "utf8");
         return vsctm.parseRawGrammar(grammar, grammarpath);
     },
