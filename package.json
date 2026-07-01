@@ -51,6 +51,14 @@
         "language": "raku",
         "scopeName": "source.raku",
         "path": "./server/raku.tmLanguage.json"
+      },
+      {
+        "scopeName": "text.html.markdown.raku",
+        "path": "./server/markdown.raku.tmLanguage.json",
+        "injectTo": ["text.html.markdown"],
+        "embeddedLanguages": {
+          "meta.embedded.block.raku": "raku"
+        }
       }
     ],
     "snippets": [
