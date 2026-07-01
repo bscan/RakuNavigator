@@ -1,0 +1,34 @@
+{
+	"scopeName": "text.html.markdown.raku",
+	"injectionSelector": "L:text.html.markdown",
+	"patterns": [
+		{
+			"include": "#raku-code-block"
+		}
+	],
+	"repository": {
+		"raku-code-block": {
+			"begin": "(?:^|\\G)(\\s*)(```|~~~)\\s*(raku|perl6|rakumod|rakutest|p6|pm6|pl6)\\s*$",
+			"beginCaptures": {
+				"2": {
+					"name": "punctuation.definition.markdown"
+				},
+				"3": {
+					"name": "fenced_code.block.language.markdown"
+				}
+			},
+			"end": "(?:^|\\G)(\\s*)(```|~~~)\\s*$",
+			"endCaptures": {
+				"2": {
+					"name": "punctuation.definition.markdown"
+				}
+			},
+			"contentName": "meta.embedded.block.raku",
+			"patterns": [
+				{
+					"include": "source.raku"
+				}
+			]
+		}
+	}
+}
